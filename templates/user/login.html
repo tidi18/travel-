@@ -24,11 +24,19 @@
                 <label for="{{ form.password.id_for_label }}">Пароль</label>
                 {{ form.password }}
             </div>
+
+            <div id="form-errors">
+                {{ form.non_field_errors }}  <!-- Ошибки, которые не привязаны к конкретным полям -->
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <div class="error">{{ error }}</div>  <!-- Ошибка под полем ввода -->
+                    {% endfor %}
+                {% endfor %}
+            </div>
             
             <div id="form-button">
                 <button id="error-button" type="submit">Войти</button>
             </div>
-
         </form>
     </div>
 {% endblock %}

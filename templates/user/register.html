@@ -13,7 +13,7 @@
         </div>
         <form method="post">
             {% csrf_token %}
-            
+        
             <div id="input-group">
                 <label for="{{ form.username.id_for_label }}">Логин</label>
                 {{ form.username }}
@@ -35,9 +35,16 @@
                     {{ form.countries_interest }}
                 </div>
             </div>
+
+            {{ form.non_field_errors }}
+            {% for field in form %}
+                {% for error in field.errors %}
+                <div class="error">{{ error }}</div>
+                {% endfor %}
+            {% endfor %}
             
             <div id="form-button">
-                <button id="error-button" type="submit">Зарегистрироваться</button>
+                <button type="submit">Зарегистрироваться</button>
             </div>
 
         </form>
