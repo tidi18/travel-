@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}register{% endblock %}
+
+{% block extra_css %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/register.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div id="wrapper">
+        <div id="title">
+            <h1>Регистрация</h1>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            
+            <div id="input-group">
+                <label for="{{ form.username.id_for_label }}">Логин</label>
+                {{ form.username }}
+            </div>
+            
+            <div id="input-group">
+                <label for="{{ form.password.id_for_label }}">Пароль</label>
+                {{ form.password }}
+            </div>
+            
+            <div id="input-group">
+                <label for="{{ form.confirm_password.id_for_label }}">Подтвердите пароль</label>
+                {{ form.confirm_password }}
+            </div>
+
+            <div id="input-group">
+                <label for="{{ form.countries_interest.id_for_label }}">Интересующие страны</label>
+                <div id="checkbox-group">
+                    {{ form.countries_interest }}
+                </div>
+            </div>
+            
+            <div id="form-button">
+                <button id="error-button" type="submit">Зарегистрироваться</button>
+            </div>
+
+        </form>
+
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

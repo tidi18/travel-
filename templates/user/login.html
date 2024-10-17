@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}login{% endblock %}
+
+{% block extra_css %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div id="wrapper">
+        <div id="title">
+            <h1>Авторизация</h1>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div id="input-group">
+                <label for="{{ form.username.id_for_label }}">Логин</label>
+                {{ form.username }}
+            </div>
+            
+            <div id="input-group">
+                <label for="{{ form.password.id_for_label }}">Пароль</label>
+                {{ form.password }}
+            </div>
+            
+            <div id="form-button">
+                <button id="error-button" type="submit">Войти</button>
+            </div>
+
+        </form>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}
