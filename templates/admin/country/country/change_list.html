@@ -1,0 +1,35 @@
+{% extends 'admin/change_list.html' %}
+
+{% block extrahead %}
+<style>
+    .custom-button {
+    padding: 4px 12px;
+    background: #747474;
+    color: #fff;
+    font-weight: 400;
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 15px;
+    border-color: transparent;
+
+}
+
+    .custom-button a {
+    color: #fff;
+    text-decoration: none;
+    display: inline-block;
+}
+
+
+    .custom-button:hover {
+        background: #404040;
+    }
+
+</style>
+{% endblock extrahead %}
+
+{% block content %}
+<button class="custom-button"><a href="update_db/">Обновить базу</a></button>
+{{ block.super }}
+{% endblock content %}
