@@ -2,9 +2,27 @@ from django import forms
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
-from .models import Profile
-from django.utils.translation import gettext_lazy as _
+from django.core.validators import MinLengthValidator
+from .models import Profile, Post, Tag
 from country.models import Country
+
+
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
 
 
 class RegistrationForm(forms.ModelForm):
@@ -68,3 +86,41 @@ class UserLoginForm(AuthenticationForm):
 
         return self.cleaned_data
 
+
+class PostForm(forms.ModelForm):
+    countries = forms.ModelMultipleChoiceField(
+        queryset=Country.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        label='Страны',
+        required=True
+    )
+    tags = forms.ModelMultipleChoiceField(
+        queryset=Tag.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        label='Теги',
+        required=False
+    )
+    subject = forms.CharField(
+        label='Тема',
+        max_length=255,
+        required=True
+    )
+    body = forms.CharField(
+        label='Тело поста',
+        widget=forms.Textarea(attrs={'rows': 1, 'cols': 20}),
+        required=True,
+        validators=[MinLengthValidator(3)]  # Убедитесь, что это импортировано
+    )
+    photos = MultipleFileField(label='Select files', required=False)
+
+    class Meta:
+        model = Post
+        fields = ['countries', 'tags',  'subject', 'body', 'photos']  # Укажите поля, которые хотите включить в форму
+
+    def clean_photos(self):
+        images = self.cleaned_data.get('photos')
+        if images:
+            for image in images:
+                if image.size > 5 * 1024 * 1024:
+                    raise forms.ValidationError("Размер изображения не может превышать 5 МБ.")
+        return images

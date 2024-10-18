@@ -15,22 +15,22 @@
             {% csrf_token %}
         
             <div id="input-group">
-                <label for="{{ form.username.id_for_label }}">Логин</label>
+                <label for="{{ form.username.id_for_label }}">Логин:</label>
                 {{ form.username }}
             </div>
             
             <div id="input-group">
-                <label for="{{ form.password.id_for_label }}">Пароль</label>
+                <label for="{{ form.password.id_for_label }}">Пароль:</label>
                 {{ form.password }}
             </div>
             
             <div id="input-group">
-                <label for="{{ form.confirm_password.id_for_label }}">Подтвердите пароль</label>
+                <label for="{{ form.confirm_password.id_for_label }}">Подтвердите пароль:</label>
                 {{ form.confirm_password }}
             </div>
 
             <div id="input-group">
-                <label for="{{ form.countries_interest.id_for_label }}">Интересующие страны</label>
+                <label for="{{ form.countries_interest.id_for_label }}">Интересующие страны:</label>
                 <div id="checkbox-group">
                     {{ form.countries_interest }}
                 </div>

@@ -83,7 +83,7 @@ html {
   }
 
 #body {
-    height: auto;
+    height: auto !important;
     background-image: url(../img/mountains-3699372_1280.jpg);
 	background-repeat: no-repeat;
 	background-size: cover; 
@@ -94,7 +94,7 @@ html {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh; 
-    margin: 0;
+    
+    
 
 }

@@ -1,6 +1,14 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.core.validators import MinLengthValidator
 from django.db import models
 from country.models import Country
+
+
+def validate_image_size(image):
+    max_size_mb = 5
+    if image.size > max_size_mb * 1024 * 1024:
+        raise ValidationError(f'Размер изображения не может превышать {max_size_mb} МБ.')
 
 
 class Profile(models.Model):
@@ -16,5 +24,25 @@ class Profile(models.Model):
         return f'{self.user}'
 
 
+class Photo(models.Model):
+    image = models.ImageField(upload_to='post_photos/', validators=[validate_image_size], verbose_name='Фото')
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=50, verbose_name='Тег')
+
+    def __str__(self):
+        return self.name
+
+
 class Post(models.Model):
-    pass
+    author = models.ForeignKey(User, on_delete=models.CASCADE,  verbose_name='Автор', blank=False, null=True)
+    countries = models.ManyToManyField(Country, blank=False, null=True, verbose_name="Страны")
+    subject = models.CharField(max_length=255, blank=False, null=True, verbose_name='Тема')
+    body = models.TextField(validators=[MinLengthValidator(3)], blank=False, null=True, verbose_name='Тело поста')
+    photos = models.ManyToManyField(Photo, blank=True, verbose_name='Фотографии')
+    tags = models.ManyToManyField(Tag, blank=True, verbose_name='Теги')
+
+    def __str__(self):
+        return f'{self.author} | {self.subject}'
+
