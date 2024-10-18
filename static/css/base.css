@@ -83,15 +83,18 @@ html {
   }
 
 #body {
+    height: auto;
+    background-image: url(../img/mountains-3699372_1280.jpg);
+	background-repeat: no-repeat;
+	background-size: cover; 
 	font-family: 'Montserrat';
 	font-size: 22px;
     font-weight: 400;
 	color:#000000;
-    background-color: #121214CC;
-
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh; 
     margin: 0;
+
 }

@@ -8,9 +8,10 @@
     height: auto;
     border-radius: 9px;
     margin: 65px 140px;
-    color: #121214;
+    color: #62639B;
     font-size: 18px;
     font-weight: 500;
+    opacity: 0.9;
 
 }
 
@@ -42,8 +43,8 @@
     padding: 10px;
     background-color: white;
     border-radius: 8px;
-    border: 0.5px solid #417893;
-    color: #121214; 
+    border: 0.5px solid #62639B;
+    color: #62639B; 
     outline: none;
 }
 
@@ -55,9 +56,9 @@
 #form-button button {
     width: 175px;
     height: 45px;
-    background-color:#417893;
+    background-color:#62639B;
     border-radius: 9px;
-    border: 2px solid #417893;
+    border: 2px solid #62639B;
     color:white;
 }
 
