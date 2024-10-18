@@ -15,24 +15,25 @@
         <form method="post">
             {% csrf_token %}
             
-            <div id="input-group">
+            <div id="input-group" class="input-username">
                 <label for="{{ form.username.id_for_label }}">Логин</label>
-                {{ form.username }}
+                    {{ form.username }}
             </div>
             
             <div id="input-group">
                 <label for="{{ form.password.id_for_label }}">Пароль</label>
-                {{ form.password }}
+                <div class="password-wrapper">
+                    {{ form.password }}
+                    <span class="toggle-password"><img src="{% static 'svg/eye_closed.svg' %}" alt="Закрытый глаз"></span>
+            
+                </div>
             </div>
-
-            <div id="form-errors">
-                {{ form.non_field_errors }}  <!-- Ошибки, которые не привязаны к конкретным полям -->
-                {% for field in form %}
-                    {% for error in field.errors %}
-                        <div class="error">{{ error }}</div>  <!-- Ошибка под полем ввода -->
-                    {% endfor %}
+            {{ form.non_field_errors }}
+            {% for field in form %}
+                {% for error in field.errors %}
+                <div class="error">{{ error }}</div>
                 {% endfor %}
-            </div>
+            {% endfor %}
             
             <div id="form-button">
                 <button id="error-button" type="submit">Войти</button>
@@ -42,5 +43,21 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const passwordField = document.querySelector('#id_password');
+        const togglePassword = document.querySelector('.toggle-password');
+
+        togglePassword.addEventListener('click', function () {
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                togglePassword.innerHTML = '<img src="{% static "svg/eye_open.svg" %}" alt="Открытый глаз">';
+            } else {
+                passwordField.type = 'password';
+                togglePassword.innerHTML = '<img src="{% static "svg/eye_closed.svg" %}" alt="Закрытый глаз">';
+            }
+        });
+    });
+</script>
 
 {% endblock %}

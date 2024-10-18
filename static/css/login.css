@@ -48,7 +48,25 @@
     border: 0.5px solid #62639B;
     color: #62639B; 
     outline: none;
+    padding-left: 10px;
+    padding-right: 30px;
 }
+
+.input-username {
+    position: relative; 
+}
+
+.input-username input {
+    width: 100%;
+    padding-right: 40px; 
+}
+
+.input-username input {
+    background-image: url('../svg/user.svg');
+    background-repeat: no-repeat;
+    background-position: calc(100% - 10px) center; 
+}
+
 
 #form-button {
     margin-top: 32px;
@@ -61,6 +79,28 @@
     border-radius: 9px;
     border: 2px solid #62639B;
     color:white;
+}
+
+.password-wrapper {
+    position: relative; 
+    display: flex;
+    align-items: center;
+}
+
+#id_password {
+    width: 100%;
+    padding-right: 40px; 
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+}
+
+.toggle-password img {
+    width: 20px;
+    height: 20px;
 }
 
 
