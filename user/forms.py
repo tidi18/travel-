@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.validators import MinLengthValidator
-from .models import Profile, Post, Tag
+from .models import Profile, Post, Tag, Comment
 from country.models import Country
 
 
@@ -124,3 +124,15 @@ class PostForm(forms.ModelForm):
                 if image.size > 5 * 1024 * 1024:
                     raise forms.ValidationError("Размер изображения не может превышать 5 МБ.")
         return images
+
+
+class CommentForm(forms.ModelForm):
+    body = forms.CharField(
+        label='Тело поста',
+        widget=forms.Textarea(attrs={'rows': 1, 'cols': 20}),
+        required=True,
+        validators=[MinLengthValidator(3)]  # Убедитесь, что это импортировано
+    )
+    class Meta:
+        model = Comment
+        fields = ['body']

@@ -13,6 +13,7 @@ urlpatterns = [
     path('profiles/<int:user_id>/', views.profile_detail_view, name='profile_detail'),
     path('profiles/<int:user_id>/posts/', views.profile_posts, name='profile_posts'),
     path('posts/country/<int:country_id>/', views.posts_by_country_view, name='posts_by_country'),
+    path('post/<int:post_id>/comment/', views.add_comment, name='add_comment'),
     path('', views.index, name='index')
 
 

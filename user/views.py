@@ -1,9 +1,10 @@
 from django.contrib.auth.views import LoginView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views import View
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
-from .forms import RegistrationForm, PostForm
+from .forms import RegistrationForm, PostForm, CommentForm
 from .models import Profile, Photo, Post
 from .forms import UserLoginForm
 from django.db.models import Q
@@ -117,6 +118,7 @@ def toggle_subscription(request, author_id):
 
 
 def post_detail_view(request, pk):
+    form = CommentForm()
     post = get_object_or_404(Post, id=pk)
 
     is_following = False
@@ -125,6 +127,7 @@ def post_detail_view(request, pk):
         is_following = author_profile.followers.filter(id=request.user.id).exists()
 
     context = {
+        'form': form,
         'post': post,
         'is_following': is_following,
         'active_link': 'post_detail',
@@ -172,3 +175,21 @@ def posts_by_country_view(request, country_id):
         'posts': posts,
     }
     return render(request, 'country/country_detail.html', context)
+
+
+def add_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post  # Привязка комментария к посту
+            comment.author = request.user  # Привязка комментария к автору
+            comment.save()
+            return redirect('post_detail', pk=post.id)  # Используйте post_id
+
+    else:
+        form = CommentForm()
+
+    return render(request, 'user/post_detail.html', {'form': form, 'post': post})

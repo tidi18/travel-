@@ -119,3 +119,57 @@
     border-radius: 3px;
 
 }
+
+#add_comment {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 90%;
+    height: auto;
+}
+
+#add_comment form {
+    width: 90%;
+    height: auto;
+}
+
+
+
+#input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 5px;
+}
+
+#input-group label {
+    margin-bottom: 5px;
+}
+
+#input-group input {
+    background-color: white;
+    border-radius: 8px;
+    border: 0.5px solid #62639B;
+    color: #62639B; 
+    outline: none;
+}
+
+#form-button {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+#form-button button {
+    width: 100%;
+    height: 45px;
+    background-color:#62639B;
+    border-radius: 9px;
+    border: 2px solid #62639B;
+    color:white;
+}
+
+textarea {
+    resize: none;  /* Запрещает изменение размера */
+    width: 100%;  /* Ширина текстового поля */
+    height: 150px;  /* Высота текстового поля */
+}

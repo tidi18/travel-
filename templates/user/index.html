@@ -49,7 +49,7 @@
                         {% if post.countries.exists %}
                             <p>Страны: 
                                 {% for country in post.countries.all %}
-                                    {{ country.name }}{% if not forloop.last %}, {% endif %}
+                                <a href="{% url 'country_detail' country.id %}">{{ country.name }}</a>{% if not forloop.last %} {% endif %}
                                 {% endfor %}
                             </p>
                         {% else %}

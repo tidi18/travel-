@@ -104,6 +104,20 @@
                         <a href="#" class="decrease-rating" data-post-id="{{ post.id }}">не нравится</a>
                     </div>
                 </div>
+                <br>
+                <div id="add_comment">
+                    <form method="post" action="{% url 'add_comment' post.id %}">
+                        {% csrf_token %}
+                        <div id="input-group">
+                            <label for="{{ form.body.id_for_label }}">Текст:</label>
+                                {{ form.body }}
+                        </div>
+                        <div id="form-button">
+                            <button type="submit">Отправить</button>
+                        </div>            
+                    </form>
+                </div>
+                <br>
             </div>
         {% endif %}    
     </div>
