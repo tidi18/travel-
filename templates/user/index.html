@@ -17,103 +17,142 @@
                 <a id="index-link" class="nav-link" href="#">Страны</a>
               </li>
               <li class="nav-item" id="index-nav-item">
-                <a id="index-link" class="nav-link" href="#">Пользователи</a>
+                <a id="index-link" class="nav-link" href="{% url 'profiles' %}">Пользователи</a>
               </li>
             </ul>
         </div>
     
-    {% if active_link == 'index' %}
-        {% for post in posts %}
-            <div id="lenta">
-                <hr>
-                <div id="author">
-                    <a href="#">{{post.author }}</a>
-                <div>
-                    {% if request.user.is_authenticated %}
-                        {% if post.is_following %}
-                            <form action="{% url 'toggle_subscription' post.author.id %}" method="POST">
-                                {% csrf_token %}
-                                <button type="submit" id="subscription-bth">Отписаться</button>
-                            </form>
-                        {% else %}
-                            <form action="{% url 'toggle_subscription' post.author.id %}" method="POST">
-                                {% csrf_token %}
-                                <button type="submit" id="subscription-bth">Подписаться</button>
-                            </form>
-                        {% endif %}
-                    {% endif %}
-                </div>
-            </div>
-            <br>
-            <div id="country">
-                {% if post.countries.exists %}
-                    <p>Страны: 
-                        {% for country in post.countries.all %}
-                            {{ country.name }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    </p>
-                {% else %}
-                    <p>Страны не указаны</p>
-                {% endif %}
-            </div>
-            <div id="img">
-                {% if post.photos.exists %}
-                    <img src="{{ post.photos.first.image.url }}" alt="photo">
-                {% else %}
-                        <p>Фотографии не загружены</p>
-                {% endif %}
-                {% if post.photos.count > 1 %}
-                    <div class="button-container">
-                        <a href="{{ post.photos.last.image.url }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="#fff" class="bi bi-arrow-left-short" viewBox="0 0 16 16">
-                                <path fill-rule="#fff" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
-                            </svg>
-                        </a>
-                        <a href="{{ post.photos.last.image.url }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="50  " height="50" fill="#fff" class="bi bi-arrow-right-short" viewBox="0 0 16 16">
-                                <path fill-rule="#fff" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"/>
-                            </svg>
-                        </a>
+        {% if active_link == 'index' %}
+            {% for post in posts %}
+                    <div id="lenta">
+                        <hr>
+                        <div id="author">
+                            <a href="#">{{post.author }}</a>
+                        <div>
+                            {% if request.user.is_authenticated %}
+                                {% if post.is_following %}
+                                    <form action="{% url 'toggle_subscription' post.author.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <button type="submit" id="subscription-bth">Отписаться</button>
+                                    </form>
+                                {% else %}
+                                    <form action="{% url 'toggle_subscription' post.author.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <button type="submit" id="subscription-bth">Подписаться</button>
+                                    </form>
+                                {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
-                {% endif %}
-            </div>   
-            <br>   
-            <div id="subject">
-                <p>
-                    {{post.subject }}
-                </p>
-            </div>
-            <div id="info-text">
-                <p>
-                    {{post.body }}
-                </p>
-            </div>
-            <div id="teg">
-                {% if post.countries.exists %}
-                    <p>Теги: 
-                        {% for tag in post.tags.all %}
-                            {{ tag.name }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    </p>
-                {% else %}
-                    <p>Теги не указаны</p>
-                {% endif %}
-            </div>
-            <div id="rating-{{ post.id }}">
-                <p>Рейтинг: <span class="rating-value">{{ post.rating }}</span></p>
-                <div class="rating-buttons">
-                    <a href="#" class="increase-rating" data-post-id="{{ post.id }}">нравится</a>
-                    <a href="#" class="decrease-rating" data-post-id="{{ post.id }}">не нравится</a>
+                    <br>
+                    <div id="country">
+                        {% if post.countries.exists %}
+                            <p>Страны: 
+                                {% for country in post.countries.all %}
+                                    {{ country.name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                        {% else %}
+                            <p>Страны не указаны</p>
+                        {% endif %}
+                    </div>
+                    <div id="img">
+                        {% if post.photos.exists %}
+                            <img src="{{ post.photos.first.image.url }}" alt="photo">
+                        {% else %}
+                                <p>Фотографии не загружены</p>
+                        {% endif %}
+                        {% if post.photos.count > 1 %}
+                            <div class="button-container">
+                                <a href="{{ post.photos.last.image.url }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="#fff" class="bi bi-arrow-left-short" viewBox="0 0 16 16">
+                                        <path fill-rule="#fff" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
+                                    </svg>
+                                </a>
+                                <a href="{{ post.photos.last.image.url }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="50  " height="50" fill="#fff" class="bi bi-arrow-right-short" viewBox="0 0 16 16">
+                                        <path fill-rule="#fff" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>   
+                    <br>   
+                    <div id="subject">
+                        <p>
+                            {{post.subject }}
+                        </p>
+                    </div>
+                    <div id="info-text">
+                        <p>
+                            {{post.body }}
+                        </p>
+                    </div>
+                    <div id="teg">
+                        {% if post.countries.exists %}
+                            <p>Теги: 
+                                {% for tag in post.tags.all %}
+                                    {{ tag.name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                        {% else %}
+                            <p>Теги не указаны</p>
+                        {% endif %}
+                    </div>
+                    <div id="rating-{{ post.id }}">
+                        <p>Рейтинг: <span class="rating-value">{{ post.rating }}</span></p>
+                        <div class="rating-buttons">
+                            <a href="#" class="increase-rating" data-post-id="{{ post.id }}">нравится</a>
+                            <a href="#" class="decrease-rating" data-post-id="{{ post.id }}">не нравится</a>
+                        </div>
+                    </div>
+                    <br>
+                    <div id="detail-post-link">
+                        <a href="{% url 'post_detail' post.id %}">Узнать подробнее</a>
+                    </div>
                 </div>
-            </div>
-            <br>
-            <div id="detail-post-link">
-                <a href="{% url 'post_detail' post.id %}">Узнать подробнее</a>
-            </div>
-        </div>
-    {% endfor %}
-{% endif %}
-</div>
+            {% endfor %}
+        {% endif %}
+        {% if active_link == 'profiles' %}
+            {% for profile in profiles %}
+                <div id="lenta">
+                    <hr>
+                    <div id="author">
+                        <a href="#">{{ profile.user.username }}</a>
+                        <div>
+                            {% if request.user.is_authenticated %}
+                                {% if request.user in profile.followers.all %}
+                                    <form action="{% url 'toggle_subscription' profile.user.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <button type="submit" id="subscription-bth">Отписаться</button>
+                                    </form>
+                                {% else %}
+                                    <form action="{% url 'toggle_subscription' profile.user.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <button type="submit" id="subscription-bth">Подписаться</button>
+                                    </form>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div id="profile-info">
+                        <p>
+                            Количество постов: {{ profile.post_count }}
+                        </p>
+                        <p>
+                            Количество стран, на которые сделаны посты: {{ profile.unique_country_count }}
+                        </p>
+                    </div>
+                    
+
+                   
+            
+                </div>
+            {% endfor %}
+        {% endif %}
+
+
+    </div>
 {% endblock %}
 
 {% block extra_js %}

@@ -9,6 +9,7 @@ urlpatterns = [
     path('post/<int:post_id>/downgrade-rating/', views.downgrade_rating, name='downgrade_rating'),
     path('subscribe/<int:author_id>/', views.toggle_subscription, name='toggle_subscription'),
     path('post/<int:pk>/', views.post_detail_view, name='post_detail'),
+    path('profiles', views.profiles_list_view, name='profiles'),
     path('', views.index, name='index')
 
 

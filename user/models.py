@@ -43,7 +43,7 @@ class Tag(models.Model):
 
 class Post(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE,  verbose_name='Автор', blank=False, null=True)
+    author = models.ForeignKey(User, on_delete=models.CASCADE,  verbose_name='Автор', blank=False, null=True, related_name='posts')
     countries = models.ManyToManyField(Country, blank=False, null=True, verbose_name="Страны")
     subject = models.CharField(max_length=255, blank=False, null=True, verbose_name='Тема')
     body = models.TextField(validators=[MinLengthValidator(3)], blank=False, null=True, verbose_name='Тело поста')

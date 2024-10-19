@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render, redirect, get_object_or_404
@@ -72,6 +73,10 @@ def create_post(request):
                 photo.save()
                 post.photos.add(photo)
 
+            profile = Profile.objects.get(user=request.user)
+            profile.post_count += 1
+            profile.save()
+
             return redirect('index')
     else:
         form = PostForm()
@@ -124,3 +129,13 @@ def post_detail_view(request, pk):
         'active_link': 'post_detail',
     }
     return render(request, 'user/post_detail.html', context)
+
+
+def profiles_list_view(request):
+    active_link = 'profiles'
+    profiles = Profile.objects.exclude(user__is_superuser=True).select_related('user')
+
+    for profile in profiles:
+        profile.unique_country_count = profile.user.posts.values('countries').distinct().count()
+
+    return render(request, 'user/index.html', {'profiles': profiles, 'active_link': active_link})
