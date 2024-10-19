@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render, redirect, get_object_or_404
@@ -9,6 +8,7 @@ from .models import Profile, Photo, Post
 from .forms import UserLoginForm
 from django.db.models import Q
 from django.http import JsonResponse
+from user.models import Country
 
 
 class RegistrationView(SuccessMessageMixin, CreateView):
@@ -121,7 +121,8 @@ def post_detail_view(request, pk):
 
     is_following = False
     if request.user.is_authenticated:
-        is_following = post.author.followers.filter(id=request.user.id).exists()
+        author_profile = get_object_or_404(Profile, user=post.author)
+        is_following = author_profile.followers.filter(id=request.user.id).exists()
 
     context = {
         'post': post,
@@ -139,3 +140,35 @@ def profiles_list_view(request):
         profile.unique_country_count = profile.user.posts.values('countries').distinct().count()
 
     return render(request, 'user/index.html', {'profiles': profiles, 'active_link': active_link})
+
+
+def profile_detail_view(request, user_id):
+    active_link = 'profile_detail_view'
+    profile = get_object_or_404(Profile, user__id=user_id)
+    user = profile.user
+    posts = profile.user.posts.all()
+    unique_country_count = profile.user.posts.values('countries').distinct().count()
+    interested_countries = profile.countries_interest.all()
+
+    return render(request, 'user/profile_detail.html', {'profile': profile, 'user': user, 'posts': posts, 'active_link': active_link, 'unique_country_count': unique_country_count, 'interested_countries': interested_countries})
+
+
+def profile_posts(request, user_id):
+    active_link = 'profile_posts'
+    profile = get_object_or_404(Profile, user__id=user_id)
+    user = profile.user
+    posts = profile.user.posts.all()
+    return render(request, 'user/profile_detail.html', {'profile': profile, 'user': user, 'posts': posts, 'active_link': active_link})
+
+
+def posts_by_country_view(request, country_id):
+    active_link = 'posts_by_country_view'
+    country = get_object_or_404(Country, id=country_id)
+    posts = Post.objects.filter(countries=country).order_by('-create_date')
+
+    context = {
+        'active_link': active_link,
+        'country': country,
+        'posts': posts,
+    }
+    return render(request, 'country/country_detail.html', context)

@@ -9,7 +9,10 @@ urlpatterns = [
     path('post/<int:post_id>/downgrade-rating/', views.downgrade_rating, name='downgrade_rating'),
     path('subscribe/<int:author_id>/', views.toggle_subscription, name='toggle_subscription'),
     path('post/<int:pk>/', views.post_detail_view, name='post_detail'),
-    path('profiles', views.profiles_list_view, name='profiles'),
+    path('profiles/', views.profiles_list_view, name='profiles'),
+    path('profiles/<int:user_id>/', views.profile_detail_view, name='profile_detail'),
+    path('profiles/<int:user_id>/posts/', views.profile_posts, name='profile_posts'),
+    path('posts/country/<int:country_id>/', views.posts_by_country_view, name='posts_by_country'),
     path('', views.index, name='index')
 
 

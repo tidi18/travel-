@@ -18,14 +18,13 @@
     opacity: 0.9;
 }
 
-#lenta {
+#detail-wrapper {
     width: 90%;
     background-color: white;
     opacity: 0.9;
     padding: 20px;
     color: #62639B;
-    
-    
+
 }
 
 #author {

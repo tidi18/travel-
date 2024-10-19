@@ -14,7 +14,7 @@
                 <a id="index-link" class="nav-link active" aria-current="page" href="{% url 'index' %}">Лента</a>
               </li>
               <li class="nav-item" id="index-nav-item">
-                <a id="index-link" class="nav-link" href="#">Страны</a>
+                <a id="index-link" class="nav-link" href="{% url 'country_list_view' %}">Страны</a>
               </li>
               <li class="nav-item" id="index-nav-item">
                 <a id="index-link" class="nav-link" href="{% url 'profiles' %}">Пользователи</a>
@@ -27,7 +27,7 @@
                     <div id="lenta">
                         <hr>
                         <div id="author">
-                            <a href="#">{{post.author }}</a>
+                            <a href="{% url 'profile_detail' post.author.id %}">{{post.author }}</a>
                         <div>
                             {% if request.user.is_authenticated %}
                                 {% if post.is_following %}
@@ -118,7 +118,7 @@
                 <div id="lenta">
                     <hr>
                     <div id="author">
-                        <a href="#">{{ profile.user.username }}</a>
+                        <a href="{% url 'profile_detail' profile.user.id %}">{{ profile.user.username }}</a>
                         <div>
                             {% if request.user.is_authenticated %}
                                 {% if request.user in profile.followers.all %}
@@ -143,15 +143,36 @@
                             Количество стран, на которые сделаны посты: {{ profile.unique_country_count }}
                         </p>
                     </div>
-                    
 
-                   
-            
+                    
                 </div>
             {% endfor %}
         {% endif %}
-
-
+        {% if active_link == 'countries' %}
+            {% for country in countries %}
+                <div id="lenta">
+                    <hr>
+                    <div id="author">
+                        <a href="{% url 'country_detail' country.id %}">{{ country.name}}</a>
+                        <div>
+                            {% if request.user.is_authenticated %}
+                                {% if country.id in user_countries_interest %}
+                                    <form action="{% url 'toggle_country_interest' country.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <button type="submit" id="subscription-bth">Убрать из интересов</button>
+                                    </form>
+                                {% else %}
+                                    <form action="{% url 'toggle_country_interest' country.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <button type="submit" id="subscription-bth">Добавить в интересы</button>
+                                    </form>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
     </div>
 {% endblock %}
 
