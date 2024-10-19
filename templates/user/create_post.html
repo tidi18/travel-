@@ -11,7 +11,7 @@
         <div id="title">
             <h1>Создать новый пост</h1>
         </div>
-        <form action="post" enctype="multipart/form-data">
+        <form  method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div id="input-group">
                 <label for="{{ form.subject.id_for_label }}">Тема:</label>

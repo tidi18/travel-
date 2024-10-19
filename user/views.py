@@ -1,11 +1,13 @@
 from django.contrib.auth.views import LoginView
 from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
 from .forms import RegistrationForm, PostForm
-from .models import Profile, Photo
+from .models import Profile, Photo, Post
 from .forms import UserLoginForm
+from django.db.models import Q
+from django.http import JsonResponse
 
 
 class RegistrationView(SuccessMessageMixin, CreateView):
@@ -32,7 +34,21 @@ class UserLoginView(SuccessMessageMixin, LoginView):
 
 
 def index(request):
-    return render(request, "user/index.html")
+    active_link = 'index'
+    if request.user.is_authenticated:
+
+        posts = Post.objects.filter(
+            Q(countries__in=request.user.profile.countries_interest.all()) |
+            Q(author__in=request.user.profile.followers.all())
+        ).distinct().order_by('-create_date')
+
+
+        for post in posts:
+            post.is_following = post.author.profile.followers.filter(id=request.user.id).exists()
+    else:
+        posts = Post.objects.all().order_by('-create_date')[:10]
+
+    return render(request, "user/index.html", {'posts': posts, 'active_link': active_link})
 
 
 def create_post(request):
@@ -42,14 +58,56 @@ def create_post(request):
             post = form.save(commit=False)
             post.author = request.user
             post.save()
+
+            countries = form.cleaned_data.get('countries')
+            if countries:
+                post.countries.set(countries)
+
+            tags = form.cleaned_data.get('tags')
+            if tags:
+                post.tags.set(tags)
+
             uploaded_images = request.FILES.getlist('photos')
             for image in uploaded_images:
                 photo = Photo(image=image)
                 photo.save()
                 post.photos.add(photo)
+
             return redirect('index')
     else:
         form = PostForm()
 
     return render(request, 'user/create_post.html', {'form': form})
+
+
+def increase_rating(request, post_id):
+    if request.method == 'POST':
+        post = get_object_or_404(Post, id=post_id)
+        post.rating += 1
+        post.save()
+        return JsonResponse({'status': 'ok', 'new_rating': post.rating})
+
+
+def downgrade_rating(request, post_id):
+    if request.method == 'POST':
+        post = get_object_or_404(Post, id=post_id)
+        if post.rating > 0:
+            post.rating -= 1
+            post.save()
+        return JsonResponse({'status': 'ok', 'new_rating': post.rating})
+
+
+def toggle_subscription(request, author_id):
+    author_profile = get_object_or_404(Profile, user_id=author_id)
+    user_profile = get_object_or_404(Profile, user=request.user)
+
+    if author_profile.followers.filter(id=request.user.id).exists():
+        author_profile.followers.remove(request.user)  # Удаляем подписку
+    else:
+        author_profile.followers.add(request.user)  # Добавляем подписку
+
+    author_profile.followers_count = author_profile.followers.count()
+    author_profile.save()
+
+    return redirect(request.META.get('HTTP_REFERER'))
 

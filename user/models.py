@@ -36,12 +36,14 @@ class Tag(models.Model):
 
 
 class Post(models.Model):
+    create_date = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE,  verbose_name='Автор', blank=False, null=True)
     countries = models.ManyToManyField(Country, blank=False, null=True, verbose_name="Страны")
     subject = models.CharField(max_length=255, blank=False, null=True, verbose_name='Тема')
     body = models.TextField(validators=[MinLengthValidator(3)], blank=False, null=True, verbose_name='Тело поста')
     photos = models.ManyToManyField(Photo, blank=True, verbose_name='Фотографии')
     tags = models.ManyToManyField(Tag, blank=True, verbose_name='Теги')
+    rating = models.IntegerField(default=0, verbose_name='Рейтинг')
 
     def __str__(self):
         return f'{self.author} | {self.subject}'
