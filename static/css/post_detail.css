@@ -1,0 +1,121 @@
+#wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center; 
+    margin: 0 auto;
+    padding: 20px;
+}
+
+#wrapper #index-nav {
+    width: 90%;
+    height: auto;
+    background-color: #62639B;
+    padding: 5px;
+    border-radius: 3px;
+    border: 2px solid #62639B;
+    text-align: center;
+    opacity: 0.9;
+}
+
+#detail-wrapper {
+    width: 90%;
+    background-color: white;
+    opacity: 0.9;
+    padding: 20px;
+    color: #62639B;
+
+}
+
+#author {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 10px; 
+}
+
+#author a {
+    margin-right: 20px; 
+    text-decoration: none;
+    color: white;
+    background-color: #62639B;
+    padding: 3px 5px;
+    border-radius: 3px;
+    border: 2px solid #62639B;
+}
+
+#img img {
+    max-width: 100%; 
+    height: auto; 
+    
+}
+
+
+#index-nav-item {
+    margin-left: 20px;
+
+}
+
+#index-link {
+    color: white;
+}
+
+#img {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    position: relative; 
+    margin: 20px 0; 
+}
+
+#img img {
+    width: 100%; 
+    height: auto; 
+    object-fit: cover; 
+}
+
+.button-container {
+    display: flex; 
+    position: absolute; 
+    top: 50%; 
+    transform: translateY(-50%); 
+    width: 100%;
+    justify-content: space-between; 
+}
+
+.button-container a {
+    margin: 0 15px; 
+    background-color: #62639B;
+    opacity: 0.9;
+    border-radius: 4px;
+    border: 2px solid #62639B;
+
+}
+
+#subscription-bth{
+    color: white;
+    background-color: #62639B;
+    border: #62639B;
+    padding: 4px 5px;
+    border-radius: 3px;
+
+}
+
+.rating-buttons a{
+    color: white;
+    background-color: #62639B;
+    text-decoration: none;
+    padding: 4px 5px;
+    border-radius: 3px;
+    margin-right: 10px;
+
+}
+
+#detail-post-link a {
+    text-decoration: none;
+    color: white;
+    background-color: #62639B;
+    padding: 4px 5px;
+    border-radius: 3px;
+
+}

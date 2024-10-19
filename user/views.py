@@ -8,7 +8,6 @@ from .models import Profile, Photo, Post
 from .forms import UserLoginForm
 from django.db.models import Q
 from django.http import JsonResponse
-from django.views.generic import DetailView
 
 
 class RegistrationView(SuccessMessageMixin, CreateView):
@@ -42,7 +41,6 @@ def index(request):
             Q(countries__in=request.user.profile.countries_interest.all()) |
             Q(author__in=request.user.profile.followers.all())
         ).distinct().order_by('-create_date')
-
 
         for post in posts:
             post.is_following = post.author.profile.followers.filter(id=request.user.id).exists()
@@ -113,7 +111,16 @@ def toggle_subscription(request, author_id):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-class PostDetailView(DetailView):
-    model = Post
-    template_name = "user/post_detail.html"
-    context_object_name = "post"
+def post_detail_view(request, pk):
+    post = get_object_or_404(Post, id=pk)
+
+    is_following = False
+    if request.user.is_authenticated:
+        is_following = post.author.followers.filter(id=request.user.id).exists()
+
+    context = {
+        'post': post,
+        'is_following': is_following,
+        'active_link': 'post_detail',
+    }
+    return render(request, 'user/post_detail.html', context)
