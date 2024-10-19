@@ -108,7 +108,7 @@
             </div>
             <br>
             <div id="detail-post-link">
-                <a href="#">Узнать подробнее</a>
+                <a href="{% url 'post_detail' post.id %}">Узнать подробнее</a>
             </div>
         </div>
     {% endfor %}

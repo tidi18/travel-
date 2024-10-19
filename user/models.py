@@ -27,6 +27,12 @@ class Profile(models.Model):
 class Photo(models.Model):
     image = models.ImageField(upload_to='post_photos/', validators=[validate_image_size], verbose_name='Фото')
 
+    def __str__(self):
+        return self.image.name
+
+    def get_absolute_url(self):
+        return self.image.url
+
 
 class Tag(models.Model):
     name = models.CharField(max_length=50, verbose_name='Тег')

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Post detail{% endblock %}
+
+{% block extra_css %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/post_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<div id="wrapper">
+    <h1>{{ post.subject }}</h1>
+    <p><strong>Автор:</strong> {{ post.author.username }}</p>
+    <p><strong>Дата создания:</strong> {{ post.create_date }}</p>
+    <p>{{ post.body }}</p>
+
+    {% if post.photos.all %}
+        <h2>Фотографии:</h2>
+        <div>
+            {% for photo in post.photos.all %}
+                <img src="{{ photo.image.url }}" alt="Photo" style="max-width: 300px;">
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if post.tags.all %}
+        <h2>Теги:</h2>
+        <p>
+            {% for tag in post.tags.all %}
+                <span>{{ tag.name }}</span>{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+    {% endif %}
+
+    <p><strong>Рейтинг:</strong> {{ post.rating }}</p>
+
+    <a href="{% url 'index' %}">Назад к списку постов</a>
+</div>
+    
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

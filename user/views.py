@@ -8,6 +8,7 @@ from .models import Profile, Photo, Post
 from .forms import UserLoginForm
 from django.db.models import Q
 from django.http import JsonResponse
+from django.views.generic import DetailView
 
 
 class RegistrationView(SuccessMessageMixin, CreateView):
@@ -111,3 +112,8 @@ def toggle_subscription(request, author_id):
 
     return redirect(request.META.get('HTTP_REFERER'))
 
+
+class PostDetailView(DetailView):
+    model = Post
+    template_name = "user/post_detail.html"
+    context_object_name = "post"
