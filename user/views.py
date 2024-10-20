@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render, redirect, get_object_or_404
@@ -8,8 +9,10 @@ from .forms import RegistrationForm, PostForm, CommentForm
 from .models import Profile, Photo, Post, Tag
 from .forms import UserLoginForm
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from user.models import Country
+
+from .permissions import check_user_blocked, check_user_can_create
 
 
 class RegistrationView(SuccessMessageMixin, CreateView):
@@ -35,14 +38,32 @@ class UserLoginView(SuccessMessageMixin, LoginView):
     next_page = 'index'
 
 
+def logout_view(request):
+    logout(request)
+    return redirect('index')
+
+
 def index(request):
+    """
+     предсталение для ленты если пользователь аутентифицирован будут показыны посты
+     по интересующим его странам и посты пользователей на которых он подписан
+     если нет то будут показаны первые 10 постов
+    """
+
     active_link = 'index'
+
     is_authenticated_user = request.user.is_authenticated
 
     if is_authenticated_user:
+        try:
+            profile = Profile.objects.get(user=request.user)
+        except Profile.DoesNotExist:
+            return redirect('login')
+
+    if is_authenticated_user:
         posts = Post.objects.filter(
-            Q(countries__in=request.user.profile.countries_interest.all()) |
-            Q(author__in=request.user.profile.followers.all())
+            Q(countries__in=profile.countries_interest.all()) |
+            Q(author__in=profile.followers.all())
         ).distinct().order_by('-create_date')
 
         for post in posts:
@@ -59,7 +80,25 @@ def index(request):
     return render(request, "user/index.html", context)
 
 
+@login_required
 def create_post(request):
+    """
+    представление создания поста
+    посты могут создать только те пользователи у которых is_create = True
+    по дефолту значение сохраняется как True
+    возможность загрузить сразу до 10 фотографий в пределах 5мб
+    """
+
+    profile = Profile.objects.get(user=request.user)
+
+    blocked_response = check_user_blocked(profile)
+    if blocked_response:
+        return blocked_response
+
+    create_permission_response = check_user_can_create(profile)
+    if create_permission_response:
+        return create_permission_response
+
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
@@ -93,7 +132,18 @@ def create_post(request):
     return render(request, 'user/create_post.html', {'form': form})
 
 
+@login_required
 def increase_rating(request, post_id):
+    """
+    Предназначенно для увеличения рейтинга
+    """
+
+    profile = Profile.objects.get(user=request.user)
+
+    blocked_response = check_user_blocked(profile)
+    if blocked_response:
+        return blocked_response
+
     if request.method == 'POST':
         post = get_object_or_404(Post, id=post_id)
         post.rating += 1
@@ -101,7 +151,18 @@ def increase_rating(request, post_id):
         return JsonResponse({'status': 'ok', 'new_rating': post.rating})
 
 
+@login_required
 def downgrade_rating(request, post_id):
+
+    """
+    предназначенно для уменьшения рейтинко
+    """
+    profile = Profile.objects.get(user=request.user)
+
+    blocked_response = check_user_blocked(profile)
+    if blocked_response:
+        return blocked_response
+
     if request.method == 'POST':
         post = get_object_or_404(Post, id=post_id)
         if post.rating > 0:
@@ -110,7 +171,19 @@ def downgrade_rating(request, post_id):
         return JsonResponse({'status': 'ok', 'new_rating': post.rating})
 
 
+@login_required
 def toggle_subscription(request, author_id):
+
+    """
+    подписка на пользователя
+    """
+
+    profile = Profile.objects.get(user=request.user)
+
+    blocked_response = check_user_blocked(profile)
+    if blocked_response:
+        return blocked_response
+
     author_profile = get_object_or_404(Profile, user_id=author_id)
     user_profile = get_object_or_404(Profile, user=request.user)
 
@@ -125,7 +198,18 @@ def toggle_subscription(request, author_id):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
+@login_required
 def post_detail_view(request, pk):
+    """
+    подробная информация поста
+    """
+
+    profile = Profile.objects.get(user=request.user)
+
+    blocked_response = check_user_blocked(profile)
+    if blocked_response:
+        return blocked_response
+
     form = CommentForm()
     post = get_object_or_404(Post, id=pk)
 
@@ -143,7 +227,19 @@ def post_detail_view(request, pk):
     return render(request, 'user/post_detail.html', context)
 
 
+@login_required
 def profiles_list_view(request):
+
+    """
+    список пользователей
+    """
+
+    profile = Profile.objects.get(user=request.user)
+
+    blocked_response = check_user_blocked(profile)
+    if blocked_response:
+        return blocked_response
+
     active_link = 'profiles'
     profiles = Profile.objects.exclude(user__is_superuser=True).select_related('user')
 
@@ -158,7 +254,19 @@ def profiles_list_view(request):
     return render(request, 'user/index.html', context)
 
 
+@login_required
 def profile_detail_view(request, user_id):
+
+    """
+    подробнее об пользователе
+    """
+
+    profile = Profile.objects.get(user=request.user)
+
+    blocked_response = check_user_blocked(profile)
+    if blocked_response:
+        return blocked_response
+
     active_link = 'profile_detail_view'
     profile = get_object_or_404(Profile, user__id=user_id)
     user = profile.user
@@ -178,7 +286,18 @@ def profile_detail_view(request, user_id):
     return render(request, 'user/profile_detail.html', context)
 
 
+@login_required
 def profile_posts(request, user_id):
+
+    """
+    посты определенного пользователя
+    """
+    profile = Profile.objects.get(user=request.user)
+
+    blocked_response = check_user_blocked(profile)
+    if blocked_response:
+        return blocked_response
+
     active_link = 'profile_posts'
     profile = get_object_or_404(Profile, user__id=user_id)
     user = profile.user
@@ -194,7 +313,19 @@ def profile_posts(request, user_id):
     return render(request, 'user/profile_detail.html', context)
 
 
+@login_required
 def posts_by_country_view(request, country_id):
+
+    """
+    посты связанные со странной
+    """
+
+    profile = Profile.objects.get(user=request.user)
+
+    blocked_response = check_user_blocked(profile)
+    if blocked_response:
+        return blocked_response
+
     active_link = 'posts_by_country_view'
     country = get_object_or_404(Country, id=country_id)
     posts = Post.objects.filter(countries=country).order_by('-create_date')
@@ -207,7 +338,19 @@ def posts_by_country_view(request, country_id):
     return render(request, 'country/country_detail.html', context)
 
 
+@login_required
 def add_comment(request, post_id):
+
+    """
+    форма комментариев
+    """
+
+    profile = Profile.objects.get(user=request.user)
+
+    blocked_response = check_user_blocked(profile)
+    if blocked_response:
+        return blocked_response
+
     post = get_object_or_404(Post, id=post_id)
 
     if request.method == 'POST':
@@ -225,7 +368,19 @@ def add_comment(request, post_id):
     return render(request, 'user/post_detail.html', {'form': form, 'post': post})
 
 
+@login_required
 def post_comments_view(request, post_id):
+
+    """
+    список комментариев определенного поста
+    """
+
+    profile = Profile.objects.get(user=request.user)
+
+    blocked_response = check_user_blocked(profile)
+    if blocked_response:
+        return blocked_response
+
     active_link = 'post_comments_view'
     post = get_object_or_404(Post, id=post_id)
     comments = post.comments.all()
@@ -239,12 +394,18 @@ def post_comments_view(request, post_id):
     return render(request, 'user/post_detail.html', context)
 
 
-def logout_view(request):
-    logout(request)
-    return redirect('index')
-
-
 def tag_view(request, id):
+
+    """
+    получение тегов по id
+    """
+
+    profile = Profile.objects.get(user=request.user)
+
+    blocked_response = check_user_blocked(profile)
+    if blocked_response:
+        return blocked_response
+
     tag = get_object_or_404(Tag, id=id)
     posts = Post.objects.filter(tags=tag).order_by('-create_date')
 
