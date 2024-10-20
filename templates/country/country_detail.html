@@ -22,7 +22,7 @@
         </ul>
     </div>
     {% if active_link == 'country_detail_view' %}
-        <div id="detail-wrapper">
+        <div id="lenta">
             <hr>
             <div id="author">
                 <a href="#">{{ country.name }}</a>
@@ -42,7 +42,7 @@
                     {% endif %}
                 </div>
             </div>
-            <div id="detail-wrapper">
+            <div id="lenta">
                 <p>Топ-уровневый домен: {{country.top_level_domain}}</p>
                 <p>Двухбуквенный код страны: {{country.alpha2_code}}</p>
                 <p>Трехбуквенный код страны: {{country.alpha3_code}}</p>
@@ -55,7 +55,7 @@
     {% endif %}
     {% if active_link == 'posts_by_country_view' %}
         {% for post in posts %}
-        <div id="detail-wrapper">
+        <div id="lenta">
             <hr>
             <div id="author">
                 <a href="{% url 'profile_detail' post.author.id %}">{{post.author }}</a>

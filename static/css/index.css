@@ -1,50 +1,3 @@
-#wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center; 
-    justify-content: center; 
-    margin: 0 auto;
-    padding: 20px;
-}
-
-#wrapper #index-nav {
-    width: 90%;
-    height: auto;
-    background-color: #62639B;
-    padding: 5px;
-    border-radius: 3px;
-    border: 2px solid #62639B;
-    text-align: center;
-    opacity: 0.9;
-}
-
-#lenta {
-    width: 90%;
-    background-color: white;
-    opacity: 0.9;
-    padding: 20px;
-    color: #62639B;
-    
-    
-}
-
-#author {
-    display: flex;
-    justify-content: space-between; 
-    align-items: center; 
-    margin-bottom: 10px; 
-}
-
-#author a {
-    margin-right: 20px; 
-    text-decoration: none;
-    color: white;
-    background-color: #62639B;
-    padding: 3px 5px;
-    border-radius: 3px;
-    border: 2px solid #62639B;
-}
-
 #index-nav {
     display: flex;
     justify-content: flex-start;
@@ -54,16 +7,6 @@
     width: 100%;
     display: flex;
     align-items: center;
-}
-
-
-#index-nav-item {
-    margin-left: 10px;
-
-}
-
-#index-link {
-    color: white;
 }
 
 .ml-auto {
@@ -102,14 +45,7 @@
 
 }
 
-#subscription-bth{
-    color: white;
-    background-color: #62639B;
-    border: #62639B;
-    padding: 4px 5px;
-    border-radius: 3px;
 
-}
 
 .rating-buttons a{
     color: white;
@@ -118,15 +54,6 @@
     padding: 4px 5px;
     border-radius: 3px;
     margin-right: 10px;
-
-}
-
-#detail-post-link a {
-    text-decoration: none;
-    color: white;
-    background-color: #62639B;
-    padding: 4px 5px;
-    border-radius: 3px;
 
 }
 
@@ -160,24 +87,5 @@
     height: auto;
     border-radius: 3px;
 }
-
-#top-info div {
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
-
-
-#top-info div a {
-    text-decoration: none;
-    color: white;
-    background-color: #62639B;
-    padding: 4px 5px;
-    border-radius: 3px;
-}
-
-#top-info #tags {
-    display: inline;
-}
-
 
 
