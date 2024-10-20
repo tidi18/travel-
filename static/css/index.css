@@ -45,13 +45,29 @@
     border: 2px solid #62639B;
 }
 
+#index-nav {
+    display: flex;
+    justify-content: flex-start;
+}
+
+#index-nav ul {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+
 #index-nav-item {
-    margin-left: 20px;
+    margin-left: 10px;
 
 }
 
 #index-link {
     color: white;
+}
+
+.ml-auto {
+    margin-left: auto;  
 }
 
 #img {
@@ -125,3 +141,6 @@
 }
 
 
+.ms-6 {
+    margin-left: 100px; 
+}

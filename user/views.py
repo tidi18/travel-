@@ -1,7 +1,7 @@
 from django.contrib.auth.views import LoginView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views import View
+from django.contrib.auth import logout
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
 from .forms import RegistrationForm, PostForm, CommentForm
@@ -201,3 +201,8 @@ def post_comments_view(request, post_id):
     comments = post.comments.all()
 
     return render(request, 'user/post_detail.html', {'post': post, 'comments': comments, 'active_link': active_link})
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')

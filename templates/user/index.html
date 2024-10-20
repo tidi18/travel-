@@ -19,6 +19,24 @@
               <li class="nav-item" id="index-nav-item">
                 <a id="index-link" class="nav-link" href="{% url 'profiles' %}">Пользователи</a>
               </li>
+              <li class="nav-item" id="index-nav-item">
+                <a id="index-link" class="nav-link" href="{% url 'create_post' %}">Опубликувать пост</a>
+              </li>
+              
+              <li class="nav-item ms-5"></li>
+
+              {% if user.is_authenticated %}
+                <li class="nav-item" id="index-nav-item">
+                    <span class="nav-link" id="index-link">{{ user.username }}</span>
+                </li>
+                <li class="nav-item" id="index-nav-item">
+                    <a id="index-link" class="nav-link" href="{% url 'logout' %}">Выйти</a>
+                </li>
+              {% else %}
+                <li class="nav-item" id="index-nav-item">
+                    <a id="index-link" class="nav-link" href="{% url 'login' %}">Войти</a>
+                </li>
+              {% endif %}
             </ul>
         </div>
     

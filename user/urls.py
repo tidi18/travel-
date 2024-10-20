@@ -1,9 +1,11 @@
+from django.contrib.auth import views as auth_views
 from django.urls import path
 from . import views
 
 urlpatterns = [
     path('register/', views.RegistrationView.as_view(), name='register'),
     path('login/', views.UserLoginView.as_view(), name='login'),
+    path('logout/', views.logout_view, name='logout'),
     path('create/post/', views.create_post, name='create_post'),
     path('post/<int:post_id>/increase-rating/', views.increase_rating, name='increase_rating'),
     path('post/<int:post_id>/downgrade-rating/', views.downgrade_rating, name='downgrade_rating'),

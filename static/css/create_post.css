@@ -89,7 +89,7 @@
     border-radius: 5px; 
     color: #62639B; 
     font-size: 16px; 
-    resize: vertical; 
+    resize: none; 
 }
 
 #input-group textarea:focus {
