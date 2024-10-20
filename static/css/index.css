@@ -140,6 +140,27 @@
     margin-right: 2px;
 }
 
+#next {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center; 
+    margin: 0 auto;
+    width: 90%;
+    height: auto;
+}
+
+#next a {
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    background-color: #62639B;
+    padding:5px 10px;
+    width: 100%;
+    height: auto;
+    border-radius: 3px;
+}
+
 
 
 

@@ -130,6 +130,14 @@
                     </div>
                 </div>
             {% endfor %}
+            {% if not is_authenticated_user %}
+            <div id="lenta">
+                <div id="next">
+                    <a href="{% url 'login' %}">читать дальше</a>
+                </div>
+            </div>
+            {% endif %}
+
         {% endif %}
         {% if active_link == 'profiles' %}
             {% for profile in profiles %}

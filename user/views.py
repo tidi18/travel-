@@ -37,8 +37,9 @@ class UserLoginView(SuccessMessageMixin, LoginView):
 
 def index(request):
     active_link = 'index'
-    if request.user.is_authenticated:
+    is_authenticated_user = request.user.is_authenticated  # Определяем, аутентифицирован ли пользователь
 
+    if is_authenticated_user:
         posts = Post.objects.filter(
             Q(countries__in=request.user.profile.countries_interest.all()) |
             Q(author__in=request.user.profile.followers.all())
@@ -49,7 +50,7 @@ def index(request):
     else:
         posts = Post.objects.all().order_by('-create_date')[:10]
 
-    return render(request, "user/index.html", {'posts': posts, 'active_link': active_link})
+    return render(request, "user/index.html", {'posts': posts, 'active_link': active_link, 'is_authenticated_user': is_authenticated_user})
 
 
 def create_post(request):
@@ -205,4 +206,4 @@ def post_comments_view(request, post_id):
 
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('index')
