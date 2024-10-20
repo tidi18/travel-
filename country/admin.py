@@ -10,6 +10,12 @@ class CountryAdmin(admin.ModelAdmin):
     list_display = ('name', 'capital', 'calling_code')
 
     def update_db(self, request):
+
+        """
+        стягивание данных с апи и сохранение в база данных
+        функция работает при нажати кнопки обноаить базу в админ панели  ( модель страны )
+        """
+
         url = 'https://api.countrylayer.com/v2/all'
         api_key = config('APIKEY')
         col = 0
