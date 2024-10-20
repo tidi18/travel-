@@ -15,7 +15,7 @@ def country_list_view(request):
 
     context = {
         'active_link': active_link,
-        'countries': countries_with_posts,  # Используем только страны с постами
+        'countries': countries_with_posts,
         'user_countries_interest': user_countries_interest,
     }
     return render(request, 'user/index.html', context)

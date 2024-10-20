@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.core.validators import MinLengthValidator
 from .models import Profile, Post, Tag, Comment
 from country.models import Country
-from django.core.exceptions import ValidationError
+
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
@@ -56,7 +56,6 @@ class RegistrationForm(forms.ModelForm):
         if commit:
             user.save()
 
-            # Проверка на существование профиля
             profile, created = Profile.objects.get_or_create(user=user)
             if created:
                 profile.countries_interest.set(self.cleaned_data['countries_interest'])
@@ -137,6 +136,7 @@ class CommentForm(forms.ModelForm):
         required=True,
         validators=[MinLengthValidator(3)]  # Убедитесь, что это импортировано
     )
+
     class Meta:
         model = Comment
         fields = ['body']

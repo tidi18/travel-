@@ -23,6 +23,10 @@ class Profile(models.Model):
     def __str__(self):
         return f'{self.user}'
 
+    class Meta:
+        verbose_name = 'Профиль'
+        verbose_name_plural = 'Профили'
+
 
 class Photo(models.Model):
     image = models.ImageField(upload_to='post_photos/', validators=[validate_image_size], verbose_name='Фото')
@@ -33,12 +37,20 @@ class Photo(models.Model):
     def get_absolute_url(self):
         return self.image.url
 
+    class Meta:
+        verbose_name = 'Фото'
+        verbose_name_plural = 'Фотки'
+
 
 class Tag(models.Model):
     name = models.CharField(max_length=50, verbose_name='Тег')
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
 
 
 class Post(models.Model):
@@ -52,20 +64,19 @@ class Post(models.Model):
     rating = models.IntegerField(default=0, verbose_name='Рейтинг')
 
     def save(self, *args, **kwargs):
-        # Вызов метода clean перед сохранением
         self.clean()
-
-        # Сохраняем объект поста
         super().save(*args, **kwargs)
 
-        # Проверяем количество фотографий после сохранения
         if self.photos.count() > 10:
-            # Удаляем сохраненный пост, если количество фотографий превышает 10
             self.delete()
             raise ValidationError("Можно прикрепить не более 10 фотографий.")
 
     def __str__(self):
         return f'{self.author} | {self.subject}'
+
+    class Meta:
+        verbose_name = 'Пост'
+        verbose_name_plural = 'Посты'
 
 
 class Comment(models.Model):
@@ -74,10 +85,11 @@ class Comment(models.Model):
     body = models.TextField(verbose_name='Текст комментария')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
 
+    def __str__(self):
+        return f'Комментарий от {self.author} на {self.post}'
+
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
         ordering = ['-created_at']
 
-    def __str__(self):
-        return f'Комментарий от {self.author} на {self.post}'

@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render, redirect, get_object_or_404
@@ -8,7 +7,7 @@ from django.urls import reverse_lazy
 from .forms import RegistrationForm, PostForm, CommentForm
 from .models import Profile, Photo, Post, Tag
 from .forms import UserLoginForm
-from django.db.models import Q, Count
+from django.db.models import Q
 from django.http import JsonResponse
 from user.models import Country
 
@@ -38,7 +37,7 @@ class UserLoginView(SuccessMessageMixin, LoginView):
 
 def index(request):
     active_link = 'index'
-    is_authenticated_user = request.user.is_authenticated  # Определяем, аутентифицирован ли пользователь
+    is_authenticated_user = request.user.is_authenticated
 
     if is_authenticated_user:
         posts = Post.objects.filter(
@@ -51,12 +50,18 @@ def index(request):
     else:
         posts = Post.objects.all().order_by('-create_date')[:10]
 
-    return render(request, "user/index.html", {'posts': posts, 'active_link': active_link, 'is_authenticated_user': is_authenticated_user})
+    context = {
+        'posts': posts,
+        'active_link': active_link,
+        'is_authenticated_user': is_authenticated_user
+    }
+
+    return render(request, "user/index.html", context)
 
 
 def create_post(request):
     if request.method == 'POST':
-        form = PostForm(request.POST, request.FILES)  # Передаем request.FILES
+        form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
@@ -70,14 +75,13 @@ def create_post(request):
             if tags:
                 post.tags.set(tags)
 
-            uploaded_images = form.cleaned_data.get('photos')  # Получаем валидные фотографии
+            uploaded_images = form.cleaned_data.get('photos')
 
             for image in uploaded_images:
                 photo = Photo(image=image)
                 photo.save()
                 post.photos.add(photo)
 
-            # Обновление профиля пользователя
             profile = Profile.objects.get(user=request.user)
             profile.post_count += 1
             profile.save()
@@ -111,9 +115,9 @@ def toggle_subscription(request, author_id):
     user_profile = get_object_or_404(Profile, user=request.user)
 
     if author_profile.followers.filter(id=request.user.id).exists():
-        author_profile.followers.remove(request.user)  # Удаляем подписку
+        author_profile.followers.remove(request.user)
     else:
-        author_profile.followers.add(request.user)  # Добавляем подписку
+        author_profile.followers.add(request.user)
 
     author_profile.followers_count = author_profile.followers.count()
     author_profile.save()
@@ -146,7 +150,12 @@ def profiles_list_view(request):
     for profile in profiles:
         profile.unique_country_count = profile.user.posts.values('countries').distinct().count()
 
-    return render(request, 'user/index.html', {'profiles': profiles, 'active_link': active_link})
+    context = {
+        'profiles': profiles,
+        'active_link': active_link
+    }
+
+    return render(request, 'user/index.html', context)
 
 
 def profile_detail_view(request, user_id):
@@ -157,7 +166,16 @@ def profile_detail_view(request, user_id):
     unique_country_count = profile.user.posts.values('countries').distinct().count()
     interested_countries = profile.countries_interest.all()
 
-    return render(request, 'user/profile_detail.html', {'profile': profile, 'user': user, 'posts': posts, 'active_link': active_link, 'unique_country_count': unique_country_count, 'interested_countries': interested_countries})
+    context = {
+        'profile': profile,
+        'user': user,
+        'posts': posts,
+        'active_link': active_link,
+        'unique_country_count': unique_country_count,
+        'interested_countries': interested_countries
+    }
+
+    return render(request, 'user/profile_detail.html', context)
 
 
 def profile_posts(request, user_id):
@@ -165,7 +183,15 @@ def profile_posts(request, user_id):
     profile = get_object_or_404(Profile, user__id=user_id)
     user = profile.user
     posts = profile.user.posts.all()
-    return render(request, 'user/profile_detail.html', {'profile': profile, 'user': user, 'posts': posts, 'active_link': active_link})
+
+    context = {
+        'profile': profile,
+        'user': user,
+        'posts': posts,
+        'active_link': active_link
+    }
+
+    return render(request, 'user/profile_detail.html', context)
 
 
 def posts_by_country_view(request, country_id):
@@ -188,10 +214,10 @@ def add_comment(request, post_id):
         form = CommentForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
-            comment.post = post  # Привязка комментария к посту
-            comment.author = request.user  # Привязка комментария к автору
+            comment.post = post
+            comment.author = request.user
             comment.save()
-            return redirect('post_detail', pk=post.id)  # Используйте post_id
+            return redirect('post_detail', pk=post.id)
 
     else:
         form = CommentForm()
@@ -204,7 +230,13 @@ def post_comments_view(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     comments = post.comments.all()
 
-    return render(request, 'user/post_detail.html', {'post': post, 'comments': comments, 'active_link': active_link})
+    context = {
+        'post': post,
+        'comments': comments,
+        'active_link': active_link
+    }
+
+    return render(request, 'user/post_detail.html', context)
 
 
 def logout_view(request):
@@ -213,13 +245,11 @@ def logout_view(request):
 
 
 def tag_view(request, id):
-    # Получаем тег по ID или 404, если не найден
     tag = get_object_or_404(Tag, id=id)
-
-    # Получаем посты, связанные с тегом
     posts = Post.objects.filter(tags=tag).order_by('-create_date')
 
-    return render(request, 'user/tag_view.html', {
+    context = {
         'posts': posts,
         'tag': tag,
-    })
+    }
+    return render(request, 'user/tag_view.html', context)
