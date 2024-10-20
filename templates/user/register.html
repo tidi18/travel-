@@ -42,7 +42,13 @@
                 <div class="error">{{ error }}</div>
                 {% endfor %}
             {% endfor %}
-            
+            <br>
+            <div id="info-text">
+                <p>
+                    Уже есть аккаунт ? <a href="{% url 'login' %}">Авторизация</a>
+                </p> 
+            </div>
+
             <div id="form-button">
                 <button type="submit">Зарегистрироваться</button>
             </div>

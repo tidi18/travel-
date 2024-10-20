@@ -5,9 +5,10 @@
     justify-content: center;
     background-color: white;
     width: 800px;
-    height: 420px;
+    height: auto;
     border-radius: 9px;
     margin: 65px 140px;
+    padding-bottom: 20px;
     color: #62639B;
     font-size: 18px;
     font-weight: 500;
@@ -24,7 +25,7 @@
 
 #wrapper form {
     width: 350px;
-    height: 300px;
+    height: auto;
     margin-top: 10px;
 }
 
@@ -104,4 +105,10 @@
 }
 
 
-
+#info-text a {
+    text-decoration: none;
+    color: white;
+    background-color: #62639B;
+    padding: 4px 5px;
+    border-radius: 3px;
+}

@@ -34,6 +34,11 @@
                 <div class="error">{{ error }}</div>
                 {% endfor %}
             {% endfor %}
+            <div id="info-text">
+                <p>
+                    Нет аккаунта ? <a href="{% url 'register' %}">Регистрация</a>
+                </p> 
+            </div>
             
             <div id="form-button">
                 <button id="error-button" type="submit">Войти</button>
