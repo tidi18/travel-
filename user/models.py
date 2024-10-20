@@ -51,6 +51,19 @@ class Post(models.Model):
     tags = models.ManyToManyField(Tag, blank=True, verbose_name='Теги')
     rating = models.IntegerField(default=0, verbose_name='Рейтинг')
 
+    def save(self, *args, **kwargs):
+        # Вызов метода clean перед сохранением
+        self.clean()
+
+        # Сохраняем объект поста
+        super().save(*args, **kwargs)
+
+        # Проверяем количество фотографий после сохранения
+        if self.photos.count() > 10:
+            # Удаляем сохраненный пост, если количество фотографий превышает 10
+            self.delete()
+            raise ValidationError("Можно прикрепить не более 10 фотографий.")
+
     def __str__(self):
         return f'{self.author} | {self.subject}'
 

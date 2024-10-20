@@ -1,0 +1,23 @@
+<div id="top-info">
+    <h3>Последние посты</h3>
+    {% for post in latest_posts %}
+        <div id="link_posts">
+            <a href="{% url 'post_detail' post.id %}">{{post.subject}}</a>      
+        </div>
+    {% endfor %}
+    <hr>
+    <h3>Топ пользователей</h3>
+    {% for user in top_users %}
+        <div id="link_users">
+            <a href="{% url 'profile_detail' user.user.id %}">{{user.user.username}}</a> - Рейтинг: {{ user.total_rating }}
+        </div>
+    {% endfor %}
+    <hr>
+    <h3>Облако тегов</h3>
+    {% for tag in tag_cloud %}
+        <div id="tags">
+            <a href="#">{{tag.name}}</a>
+        </div>
+    {% endfor %}
+</div>
+

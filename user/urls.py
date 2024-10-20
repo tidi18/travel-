@@ -16,6 +16,7 @@ urlpatterns = [
     path('posts/country/<int:country_id>/', views.posts_by_country_view, name='posts_by_country'),
     path('post/<int:post_id>/comment/', views.add_comment, name='add_comment'),
     path('post/<int:post_id>/comments/', views.post_comments_view, name='post_comments'),
+    path('tag/<int:id>/', views.tag_view, name='tag_view'),
     path('', views.index, name='index')
 
 

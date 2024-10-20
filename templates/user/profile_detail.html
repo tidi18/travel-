@@ -21,8 +21,12 @@
               </li>
             </ul>
         </div>
+        <div id="lenta">
+            {% include 'commom_info.html' %}
+        </div>
         {% if active_link == 'profile_detail_view' %}
             <div id="lenta">
+                <hr>
                 <div id="author">
                     <a href="{% url 'profile_detail' profile.user.id %}">{{ profile.user.username }}</a>
                     <div>

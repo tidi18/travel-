@@ -21,6 +21,9 @@
               </li>
             </ul>
         </div>
+        <div id="detail-wrapper">
+            {% include 'commom_info.html' %}
+        </div>
         {% if active_link == 'post_detail' %}
             <div id="detail-wrapper">
                 <hr>
@@ -131,16 +134,22 @@
             </div>
         {% endif %}
         {% if active_link == 'post_comments_view' %}
-            {% for comment in comments %}
-                <div id="detail-wrapper">
-                    <hr>
-                    <div>
-                        <p><strong>{{ comment.author.username }}</strong></p>
-                        <p><em>{{ comment.created_at|date:"d.m.Y H:i" }}</em></p>
-                        <p>{{ comment.body }}
+            {% if comments %}
+                {% for comment in comments %}
+                    <div id="detail-wrapper">
+                        <hr>
+                        <div>
+                            <p><strong>{{ comment.author.username }}</strong></p>
+                            <p><em>{{ comment.created_at|date:"d.m.Y H:i" }}</em></p>
+                            <p>{{ comment.body }}
+                        </div>
                     </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            {% else %}
+                    <div id="detail-wrapper">
+                        <p>Комментариев еще нет.</p> 
+                    </div>
+            {% endif %}
         {% endif %}
 
 

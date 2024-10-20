@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render, redirect, get_object_or_404
@@ -5,9 +6,9 @@ from django.contrib.auth import logout
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
 from .forms import RegistrationForm, PostForm, CommentForm
-from .models import Profile, Photo, Post
+from .models import Profile, Photo, Post, Tag
 from .forms import UserLoginForm
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.http import JsonResponse
 from user.models import Country
 
@@ -55,7 +56,7 @@ def index(request):
 
 def create_post(request):
     if request.method == 'POST':
-        form = PostForm(request.POST)
+        form = PostForm(request.POST, request.FILES)  # Передаем request.FILES
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
@@ -69,12 +70,14 @@ def create_post(request):
             if tags:
                 post.tags.set(tags)
 
-            uploaded_images = request.FILES.getlist('photos')
+            uploaded_images = form.cleaned_data.get('photos')  # Получаем валидные фотографии
+
             for image in uploaded_images:
                 photo = Photo(image=image)
                 photo.save()
                 post.photos.add(photo)
 
+            # Обновление профиля пользователя
             profile = Profile.objects.get(user=request.user)
             profile.post_count += 1
             profile.save()
@@ -207,3 +210,16 @@ def post_comments_view(request, post_id):
 def logout_view(request):
     logout(request)
     return redirect('index')
+
+
+def tag_view(request, id):
+    # Получаем тег по ID или 404, если не найден
+    tag = get_object_or_404(Tag, id=id)
+
+    # Получаем посты, связанные с тегом
+    posts = Post.objects.filter(tags=tag).order_by('-create_date')
+
+    return render(request, 'user/tag_view.html', {
+        'posts': posts,
+        'tag': tag,
+    })

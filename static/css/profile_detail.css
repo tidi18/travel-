@@ -87,3 +87,23 @@
     border-radius: 3px;
 
 }
+
+#top-info div {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+
+#top-info div a {
+    text-decoration: none;
+    color: white;
+    background-color: #62639B;
+    padding: 4px 5px;
+    border-radius: 3px;
+}
+
+#top-info #tags {
+    display: inline;
+}
+
+

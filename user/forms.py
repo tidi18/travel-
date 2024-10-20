@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.core.validators import MinLengthValidator
 from .models import Profile, Post, Tag, Comment
 from country.models import Country
-
+from django.core.exceptions import ValidationError
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
@@ -109,21 +109,25 @@ class PostForm(forms.ModelForm):
         label='Тело поста',
         widget=forms.Textarea(attrs={'rows': 1, 'cols': 20}),
         required=True,
-        validators=[MinLengthValidator(3)]  # Убедитесь, что это импортировано
+        validators=[MinLengthValidator(3)]
     )
-    photos = MultipleFileField(label='Select files', required=False)
+    photos = MultipleFileField(label='Select files', required=True)
 
     class Meta:
         model = Post
         fields = ['countries', 'tags',  'subject', 'body', 'photos']  # Укажите поля, которые хотите включить в форму
 
     def clean_photos(self):
-        images = self.cleaned_data.get('photos')
-        if images:
-            for image in images:
-                if image.size > 5 * 1024 * 1024:
-                    raise forms.ValidationError("Размер изображения не может превышать 5 МБ.")
-        return images
+        photos = self.cleaned_data.get('photos')
+
+        if len(photos) > 10:
+            raise forms.ValidationError("Можно прикрепить не более 10 фотографий.")
+
+        for image in photos:
+            if image.size > 5 * 1024 * 1024:  # 5 МБ в байтах
+                raise forms.ValidationError("Размер изображения не может превышать 5 МБ.")
+
+        return photos
 
 
 class CommentForm(forms.ModelForm):
