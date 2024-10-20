@@ -17,7 +17,7 @@
                 <a id="index-link" class="nav-link" aria-current="page" href="{% url 'post_detail' post.id %}">Подробнее</a>
               </li>
               <li class="nav-item" id="index-nav-item">
-                <a id="index-link" class="nav-link" href="#">Комментарии</a>
+                <a id="index-link" class="nav-link" href="{% url 'post_comments' post.id %}">Комментарии</a>
               </li>
             </ul>
         </div>
@@ -104,22 +104,48 @@
                         <a href="#" class="decrease-rating" data-post-id="{{ post.id }}">не нравится</a>
                     </div>
                 </div>
-                <br>
-                <div id="add_comment">
-                    <form method="post" action="{% url 'add_comment' post.id %}">
-                        {% csrf_token %}
-                        <div id="input-group">
-                            <label for="{{ form.body.id_for_label }}">Текст:</label>
-                                {{ form.body }}
-                        </div>
-                        <div id="form-button">
-                            <button type="submit">Отправить</button>
-                        </div>            
-                    </form>
-                </div>
+                {% if request.user.is_authenticated %}
+                    <br>
+                    <div id="add_comment">
+                        <form method="post" action="{% url 'add_comment' post.id %}">
+                            {% csrf_token %}
+                            <div id="input-group">
+                                <label for="{{ form.body.id_for_label }}">Оставь комментарий:</label>
+                                    {{ form.body }}
+                            </div>
+                            <div id="form-button">
+                                <button type="submit">Отправить</button>
+                            </div>            
+                        </form>
+                    </div>
+                {% else %}
+                    <br>
+                    <div id="info-text">
+                        <p>
+                            чтобы оставить комментарий <a href="{% url 'login' %}">войдите в сиситему</a>
+                        </p>
+                    </div>
+                {% endif %}
+                  
                 <br>
             </div>
-        {% endif %}    
+        {% endif %}
+        {% if active_link == 'post_comments_view' %}
+            {% for comment in comments %}
+                <div id="detail-wrapper">
+                    <hr>
+                    <div>
+                        <p><strong>{{ comment.author.username }}</strong></p>
+                        <p><em>{{ comment.created_at|date:"d.m.Y H:i" }}</em></p>
+                        <p>{{ comment.body }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+
+
+
     </div>
 
 {% endblock %}

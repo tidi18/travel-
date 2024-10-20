@@ -193,3 +193,11 @@ def add_comment(request, post_id):
         form = CommentForm()
 
     return render(request, 'user/post_detail.html', {'form': form, 'post': post})
+
+
+def post_comments_view(request, post_id):
+    active_link = 'post_comments_view'
+    post = get_object_or_404(Post, id=post_id)
+    comments = post.comments.all()
+
+    return render(request, 'user/post_detail.html', {'post': post, 'comments': comments, 'active_link': active_link})
