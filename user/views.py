@@ -444,3 +444,25 @@ def tag_view(request, id):
         'tag': tag,
     }
     return render(request, 'user/tag_view.html', context)
+
+
+def posts_by_tag_view(request, tag_id):
+
+    """
+    список постов по тегу
+    """
+
+    profile = Profile.objects.get(user=request.user)
+
+    blocked_response = check_user_blocked(profile)
+    if blocked_response:
+        return blocked_response
+
+    tag = get_object_or_404(Tag, id=tag_id)
+    posts = Post.objects.filter(tags=tag).order_by('-create_date')
+
+    context = {
+        'tag': tag,
+        'posts': posts,
+    }
+    return render(request, 'user/posts_by_tag.html', context)

@@ -143,7 +143,7 @@
                 {% if post.countries.exists %}
                     <p>Теги: 
                         {% for tag in post.tags.all %}
-                            {{ tag.name }}{% if not forloop.last %}, {% endif %}
+                        <a href="{% url 'posts_by_tag' tag.id %}">{{ tag.name }}</a>{% if not forloop.last %}, {% endif %}
                         {% endfor %}
                     </p>
                 {% else %}

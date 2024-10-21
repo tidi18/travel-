@@ -267,3 +267,26 @@ html {
   border-radius: 3px;
   margin-right: 2px;
 }
+
+#img {
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+  position: relative; 
+  margin: 20px 0; 
+}
+
+#img img {
+  width: 100%; 
+  height: auto; 
+  object-fit: cover; 
+}
+
+#teg a {
+  text-decoration: none;
+  color: white;
+  background-color: #62639B;
+  padding: 3px 3px;
+  border-radius: 3px;
+  margin-right: 2px;
+}

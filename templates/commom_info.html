@@ -16,7 +16,7 @@
     <h3>Облако тегов</h3>
     {% for tag in tag_cloud %}
         <div id="tags">
-            <a href="#">{{tag.name}}</a>
+            <a href="{% url 'posts_by_tag' tag.id %}">{{tag.name}}</a>
         </div>
     {% endfor %}
 </div>
