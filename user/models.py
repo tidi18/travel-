@@ -93,3 +93,20 @@ class Comment(models.Model):
         verbose_name_plural = 'Комментарии'
         ordering = ['-created_at']
 
+
+class PostRatingAction(models.Model):
+    """
+    модель для отслеживания кто оставил голос
+    ( ограничение для того чтобы каждый пользователь мог оценить пост только 1 раз )
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, verbose_name='Пост')
+    action = models.CharField(max_length=10, choices=[('up', 'Upvote'), ('down', 'Downvote')])
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Оценка'
+        verbose_name_plural = 'Оценки'
+        unique_together = ('user', 'post', 'action')
+

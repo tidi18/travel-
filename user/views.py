@@ -6,7 +6,7 @@ from django.contrib.auth import logout
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
 from .forms import RegistrationForm, PostForm, CommentForm
-from .models import Profile, Photo, Post, Tag
+from .models import Profile, Photo, Post, Tag, PostRatingAction
 from .forms import UserLoginForm
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
@@ -135,40 +135,70 @@ def create_post(request):
 @login_required
 def increase_rating(request, post_id):
     """
-    Предназначенно для увеличения рейтинга
+    Предназначенно для увеличения рейтинга поста.
     """
-
     profile = Profile.objects.get(user=request.user)
+    post = get_object_or_404(Post, id=post_id)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
         return blocked_response
 
-    if request.method == 'POST':
-        post = get_object_or_404(Post, id=post_id)
-        post.rating += 1
-        post.save()
+    rating_action, created = PostRatingAction.objects.get_or_create(user=request.user, post=post)
+
+    if rating_action.action == 'up':
         return JsonResponse({'status': 'ok', 'new_rating': post.rating})
+
+    if request.method == 'POST':
+        if rating_action.action == 'down':
+
+            post.rating += 1
+        else:
+            post.rating += 1
+
+        post.save()
+
+        rating_action.action = 'up'
+        rating_action.save()
+
+        return JsonResponse({'status': 'ok', 'new_rating': post.rating})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=400)
 
 
 @login_required
 def downgrade_rating(request, post_id):
-
     """
-    предназначенно для уменьшения рейтинко
+    Предназначенно для уменьшения рейтинка поста.
     """
     profile = Profile.objects.get(user=request.user)
+    post = get_object_or_404(Post, id=post_id)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
         return blocked_response
 
-    if request.method == 'POST':
-        post = get_object_or_404(Post, id=post_id)
-        if post.rating > 0:
-            post.rating -= 1
-            post.save()
+    rating_action, created = PostRatingAction.objects.get_or_create(user=request.user, post=post)
+
+    if rating_action.action == 'down':
         return JsonResponse({'status': 'ok', 'new_rating': post.rating})
+
+    if request.method == 'POST':
+        if post.rating > 0:
+            if rating_action.action == 'up':
+
+                post.rating -= 1
+            else:
+                post.rating -= 1
+
+            post.save()
+
+            rating_action.action = 'down'
+            rating_action.save()
+
+        return JsonResponse({'status': 'ok', 'new_rating': post.rating})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=400)
 
 
 @login_required
