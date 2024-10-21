@@ -255,6 +255,10 @@ html {
   display: inline;
 }
 
+#country p {
+  line-height: 50px
+}
+
 #country a {
   text-decoration: none;
   color: white;

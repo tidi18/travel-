@@ -28,7 +28,7 @@
             <div id="lenta">
                 <hr>
                 <div id="author">
-                    <a href="#">{{post.author }}</a>
+                    <a href="{% url 'profile_detail' post.author.id %}">{{post.author }}</a>
                     <div>
                         {% if request.user.is_authenticated %}
                             {% if request.user != post.author %}
@@ -52,7 +52,7 @@
                     {% if post.countries.exists %}
                         <p>Страны: 
                             {% for country in post.countries.all %}
-                                {{ country.name }}{% if not forloop.last %}, {% endif %}
+                            <a href="{% url 'country_detail' country.id %}">{{ country.name }}</a>{% if not forloop.last %} {% endif %}
                             {% endfor %}
                         </p>
                     {% else %}
@@ -140,7 +140,7 @@
         {% if active_link == 'post_comments_view' %}
             {% if comments %}
                 {% for comment in comments %}
-                    <div id="detail-wrapper">
+                    <div id="lenta">
                         <hr>
                         <div>
                             <p><strong>{{ comment.author.username }}</strong></p>

@@ -39,6 +39,12 @@ class RegistrationForm(forms.ModelForm):
         model = User
         fields = ['username', 'password', 'confirm_password', 'countries_interest']
 
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError("Пользователь с таким именем уже существует.")
+        return username
+
     def clean(self):
         cleaned_data = super().clean()
         password = cleaned_data.get("password")
@@ -51,7 +57,7 @@ class RegistrationForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.set_password(self.cleaned_data['password'])  # Устанавливаем зашифрованный пароль
+        user.set_password(self.cleaned_data['password'])
 
         if commit:
             user.save()

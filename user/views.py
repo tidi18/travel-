@@ -9,7 +9,7 @@ from .forms import RegistrationForm, PostForm, CommentForm
 from .models import Profile, Photo, Post, Tag, PostRatingAction
 from .forms import UserLoginForm
 from django.db.models import Q
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from user.models import Country
 
 from .permissions import check_user_blocked, check_user_can_create
@@ -413,7 +413,7 @@ def post_comments_view(request, post_id):
 
     active_link = 'post_comments_view'
     post = get_object_or_404(Post, id=post_id)
-    comments = post.comments.all()
+    comments = post.comments.all().order_by('created_at')
 
     context = {
         'post': post,
