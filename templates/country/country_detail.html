@@ -147,6 +147,25 @@
         </div>
     </div>
         {% endfor %}
+        <div id="lenta">
+            <div id="poginator-button">
+                <span id="step-links">
+                    {% if posts.has_previous %}
+                        <a href="?page=1">&laquo; Первая</a>
+                        <a href="?page={{ posts.previous_page_number }}">Назад</a>
+                    {% endif %}
+        
+                    <span id="current">
+                        Страница {{ posts.number }} из {{ posts.paginator.num_pages }}
+                    </span>
+        
+                    {% if posts.has_next %}
+                        <a href="?page={{ posts.next_page_number }}">Вперёд</a>
+                        <a href="?page={{ posts.paginator.num_pages }}">Последняя &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
     {% endif %}
 </div>
 {% endblock %}

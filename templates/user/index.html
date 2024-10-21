@@ -137,12 +137,33 @@
                 </div>
             {% endfor %}
             {% if not is_authenticated_user %}
-            <div id="lenta">
-                <div id="next">
-                    <a href="{% url 'login' %}">читать дальше</a>
+                <div id="lenta">
+                    <div id="next">
+                        <a href="{% url 'login' %}">читать дальше</a>
+                    </div>
                 </div>
-            </div>
+            {% else %}
+                <div id="lenta">
+                    <div id="poginator-button">
+                        <span id="step-links">
+                            {% if posts.has_previous %}
+                                <a href="?page=1">&laquo; Первая</a>
+                                <a href="?page={{ posts.previous_page_number }}">Назад</a>
+                            {% endif %}
+                
+                            <span id="current">
+                                Страница {{ posts.number }} из {{ posts.paginator.num_pages }}
+                            </span>
+                
+                            {% if posts.has_next %}
+                                <a href="?page={{ posts.next_page_number }}">Вперёд</a>
+                                <a href="?page={{ posts.paginator.num_pages }}">Последняя &raquo;</a>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>    
             {% endif %}
+
 
         {% endif %}
         {% if active_link == 'profiles' %}
@@ -177,10 +198,27 @@
                             Количество стран, на которые сделаны посты: {{ profile.unique_country_count }}
                         </p>
                     </div>
-
-                    
                 </div>
             {% endfor %}
+            <div id="lenta">
+                <div id="poginator-button">
+                    <span id="step-links">
+                        {% if profiles.has_previous %}
+                            <a href="?page=1">&laquo; Первая</a>
+                            <a href="?page={{ profiles.previous_page_number }}">Назад</a>
+                        {% endif %}
+            
+                        <span id="current">
+                            Страница {{ profiles.number }} из {{ profiles.paginator.num_pages }}
+                        </span>
+            
+                        {% if profiles.has_next %}
+                            <a href="?page={{ profiles.next_page_number }}">Вперёд</a>
+                            <a href="?page={{ profiles.paginator.num_pages }}">Последняя &raquo;</a>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
         {% endif %}
         {% if active_link == 'countries' %}
             {% for country in countries %}
@@ -206,6 +244,25 @@
                     </div>
                 </div>
             {% endfor %}
+            <div id="lenta">
+                <div id="poginator-button">
+                    <span id="step-links">
+                        {% if countries.has_previous %}
+                            <a href="?page=1">&laquo; Первая</a>
+                            <a href="?page={{ countries.previous_page_number }}">Назад</a>
+                        {% endif %}
+            
+                        <span id="current">
+                            Страница {{ countries.number }} из {{ countries.paginator.num_pages }}
+                        </span>
+            
+                        {% if countries.has_next %}
+                            <a href="?page={{ countries.next_page_number }}">Вперёд</a>
+                            <a href="?page={{ countries.paginator.num_pages }}">Последняя &raquo;</a>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>   
         {% endif %}
     </div>
 {% endblock %}

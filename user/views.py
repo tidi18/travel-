@@ -11,7 +11,7 @@ from .forms import UserLoginForm
 from django.db.models import Q
 from django.http import JsonResponse
 from user.models import Country
-
+from django.core.paginator import Paginator
 from .permissions import check_user_blocked, check_user_can_create
 
 
@@ -60,19 +60,20 @@ def index(request):
         except Profile.DoesNotExist:
             return redirect('login')
 
-    if is_authenticated_user:
-        posts = Post.objects.filter(
-            Q(countries__in=profile.countries_interest.all()) |
-            Q(author__in=profile.followers.all())
-        ).distinct().order_by('-create_date')
+    posts = Post.objects.filter(
+        Q(countries__in=profile.countries_interest.all()) |
+        Q(author__in=profile.followers.all())
+    ).distinct().order_by('-create_date')
 
-        for post in posts:
-            post.is_following = post.author.profile.followers.filter(id=request.user.id).exists()
-    else:
-        posts = Post.objects.all().order_by('-create_date')[:10]
+    for post in posts:
+        post.is_following = post.author.profile.followers.filter(id=request.user.id).exists()
+
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        'posts': posts,
+        'posts': page_obj,
         'active_link': active_link,
         'is_authenticated_user': is_authenticated_user
     }
@@ -276,8 +277,12 @@ def profiles_list_view(request):
     for profile in profiles:
         profile.unique_country_count = profile.user.posts.values('countries').distinct().count()
 
+    paginator = Paginator(profiles, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'profiles': profiles,
+        'profiles': page_obj,
         'active_link': active_link
     }
 
@@ -304,10 +309,14 @@ def profile_detail_view(request, user_id):
     unique_country_count = profile.user.posts.values('countries').distinct().count()
     interested_countries = profile.countries_interest.all()
 
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'profile': profile,
         'user': user,
-        'posts': posts,
+        'posts': page_obj,
         'active_link': active_link,
         'unique_country_count': unique_country_count,
         'interested_countries': interested_countries
@@ -333,10 +342,14 @@ def profile_posts(request, user_id):
     user = profile.user
     posts = profile.user.posts.all()
 
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'profile': profile,
         'user': user,
-        'posts': posts,
+        'posts': page_obj,
         'active_link': active_link
     }
 
@@ -360,10 +373,14 @@ def posts_by_country_view(request, country_id):
     country = get_object_or_404(Country, id=country_id)
     posts = Post.objects.filter(countries=country).order_by('-create_date')
 
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'active_link': active_link,
         'country': country,
-        'posts': posts,
+        'posts': page_obj,
     }
     return render(request, 'country/country_detail.html', context)
 
@@ -415,9 +432,13 @@ def post_comments_view(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     comments = post.comments.all().order_by('created_at')
 
+    paginator = Paginator(comments, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'post': post,
-        'comments': comments,
+        'comments': page_obj,
         'active_link': active_link
     }
 
@@ -439,8 +460,12 @@ def tag_view(request, id):
     tag = get_object_or_404(Tag, id=id)
     posts = Post.objects.filter(tags=tag).order_by('-create_date')
 
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'posts': posts,
+        'posts': page_obj,
         'tag': tag,
     }
     return render(request, 'user/tag_view.html', context)
@@ -461,8 +486,12 @@ def posts_by_tag_view(request, tag_id):
     tag = get_object_or_404(Tag, id=tag_id)
     posts = Post.objects.filter(tags=tag).order_by('-create_date')
 
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'tag': tag,
-        'posts': posts,
+        'posts': page_obj,
     }
     return render(request, 'user/posts_by_tag.html', context)

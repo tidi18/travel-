@@ -149,6 +149,26 @@
                         </div>
                     </div>
                 {% endfor %}
+                <div id="lenta">
+                    <div id="poginator-button">
+                        <span id="step-links">
+                            {% if comments.has_previous %}
+                                <a href="?page=1">&laquo; Первая</a>
+                                <a href="?page={{ comments.previous_page_number }}">Назад</a>
+                            {% endif %}
+                
+                            <span id="current">
+                                Страница {{ comments.number }} из {{ comments.paginator.num_pages }}
+                            </span>
+                
+                            {% if comments.has_next %}
+                                <a href="?page={{ comments.next_page_number }}">Вперёд</a>
+                                <a href="?page={{ comments.paginator.num_pages }}">Последняя &raquo;</a>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
             {% else %}
                     <div id="detail-wrapper">
                         <p>Комментариев еще нет.</p> 

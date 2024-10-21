@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404, redirect
 from user.models import Profile
 from .models import Country
@@ -27,11 +28,16 @@ def country_list_view(request):
     else:
         user_countries_interest = []
 
+    paginator = Paginator(countries_with_posts, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'active_link': active_link,
-        'countries': countries_with_posts,
+        'countries': page_obj,
         'user_countries_interest': user_countries_interest,
     }
+
     return render(request, 'user/index.html', context)
 
 
