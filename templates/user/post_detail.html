@@ -31,16 +31,18 @@
                     <a href="#">{{post.author }}</a>
                     <div>
                         {% if request.user.is_authenticated %}
-                            {% if post.is_following %}
-                                <form action="{% url 'toggle_subscription' post.author.id %}" method="POST">
-                                    {% csrf_token %}
-                                    <button type="submit" id="subscription-bth">Отписаться</button>
-                                </form>
-                            {% else %}
-                                <form action="{% url 'toggle_subscription' post.author.id %}" method="POST">
-                                    {% csrf_token %}
-                                    <button type="submit" id="subscription-bth">Подписаться</button>
-                                </form>
+                            {% if request.user != post.author %}
+                                {% if post.is_following %}
+                                    <form action="{% url 'toggle_subscription' post.author.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <button type="submit" id="subscription-bth">Отписаться</button>
+                                    </form>
+                                {% else %}
+                                    <form action="{% url 'toggle_subscription' post.author.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <button type="submit" id="subscription-bth">Подписаться</button>
+                                    </form>
+                                {% endif %}
                             {% endif %}
                         {% endif %}
                     </div>
@@ -102,10 +104,12 @@
                 </div>
                 <div id="rating-{{ post.id }}">
                     <p>Рейтинг: <span class="rating-value">{{ post.rating }}</span></p>
-                    <div class="rating-buttons">
-                        <a href="#" class="increase-rating" data-post-id="{{ post.id }}">нравится</a>
-                        <a href="#" class="decrease-rating" data-post-id="{{ post.id }}">не нравится</a>
-                    </div>
+                    {% if post.author != request.user %}
+                        <div class="rating-buttons">
+                            <a href="#" class="increase-rating" data-post-id="{{ post.id }}">нравится</a>
+                            <a href="#" class="decrease-rating" data-post-id="{{ post.id }}">не нравится</a>
+                        </div>
+                    {% endif %}
                 </div>
                 {% if request.user.is_authenticated %}
                     <br>
@@ -151,10 +155,6 @@
                     </div>
             {% endif %}
         {% endif %}
-
-
-
-
     </div>
 
 {% endblock %}

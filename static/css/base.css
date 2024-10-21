@@ -254,3 +254,12 @@ html {
 #top-info #tags {
   display: inline;
 }
+
+#country a {
+  text-decoration: none;
+  color: white;
+  background-color: #62639B;
+  padding: 3px 3px;
+  border-radius: 3px;
+  margin-right: 2px;
+}

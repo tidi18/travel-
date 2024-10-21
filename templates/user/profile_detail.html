@@ -31,16 +31,18 @@
                     <a href="{% url 'profile_detail' profile.user.id %}">{{ profile.user.username }}</a>
                     <div>
                         {% if request.user.is_authenticated %}
-                            {% if request.user in profile.followers.all %}
-                                <form action="{% url 'toggle_subscription' profile.user.id %}" method="POST">
-                                    {% csrf_token %}
-                                    <button type="submit" id="subscription-bth">Отписаться</button>
-                                </form>
-                            {% else %}
-                                <form action="{% url 'toggle_subscription' profile.user.id %}" method="POST">
-                                    {% csrf_token %}
-                                    <button type="submit" id="subscription-bth">Подписаться</button>
-                                </form>
+                            {% if request.user != profile.user %} 
+                                {% if request.user in profile.followers.all %}
+                                    <form action="{% url 'toggle_subscription' profile.user.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <button type="submit" id="subscription-bth">Отписаться</button>
+                                    </form>
+                                {% else %}
+                                    <form action="{% url 'toggle_subscription' profile.user.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <button type="submit" id="subscription-bth">Подписаться</button>
+                                    </form>
+                                {% endif %}
                             {% endif %}
                         {% endif %}
                     </div>
@@ -60,7 +62,7 @@
                     {% if interested_countries %}
                         <p>Интересующие страны: 
                             {% for country in interested_countries %}
-                                {{ country.name }}{% if not forloop.last %}, {% endif %}
+                            <a href="{% url 'country_detail' country.id %}">{{ country.name }}</a>{% if not forloop.last %} {% endif %}
                             {% endfor %}
                         </p>
                     {% else %}
@@ -77,16 +79,18 @@
                     <a href="{% url 'profile_detail' post.author.id %}">{{post.author }}</a>
                 <div>
                     {% if request.user.is_authenticated %}
-                        {% if post.is_following %}
-                            <form action="{% url 'toggle_subscription' post.author.id %}" method="POST">
-                                {% csrf_token %}
-                                <button type="submit" id="subscription-bth">Отписаться</button>
-                            </form>
-                        {% else %}
-                            <form action="{% url 'toggle_subscription' post.author.id %}" method="POST">
-                                {% csrf_token %}
-                                <button type="submit" id="subscription-bth">Подписаться</button>
-                            </form>
+                        {% if request.user != profile.user %}
+                            {% if post.is_following %}
+                                <form action="{% url 'toggle_subscription' post.author.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <button type="submit" id="subscription-bth">Отписаться</button>
+                                </form>
+                            {% else %}
+                                <form action="{% url 'toggle_subscription' post.author.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <button type="submit" id="subscription-bth">Подписаться</button>
+                                </form>
+                            {% endif %}
                         {% endif %}
                     {% endif %}
                 </div>
@@ -148,10 +152,12 @@
             </div>
             <div id="rating-{{ post.id }}">
                 <p>Рейтинг: <span class="rating-value">{{ post.rating }}</span></p>
-                <div class="rating-buttons">
-                    <a href="#" class="increase-rating" data-post-id="{{ post.id }}">нравится</a>
-                    <a href="#" class="decrease-rating" data-post-id="{{ post.id }}">не нравится</a>
-                </div>
+                {% if post.author != request.user %}
+                    <div class="rating-buttons">
+                        <a href="#" class="increase-rating" data-post-id="{{ post.id }}">нравится</a>
+                        <a href="#" class="decrease-rating" data-post-id="{{ post.id }}">не нравится</a>
+                    </div>
+                {% endif %}
             </div>
             <br>
             <div id="detail-post-link">

@@ -58,15 +58,6 @@
 }
 
 
-#country a {
-    text-decoration: none;
-    color: white;
-    background-color: #62639B;
-    padding: 3px 3px;
-    border-radius: 3px;
-    margin-right: 2px;
-}
-
 #next {
     display: flex;
     flex-direction: column;
