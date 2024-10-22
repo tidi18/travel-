@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from user.models import Profile
 from .models import Country
@@ -20,7 +21,7 @@ def country_list_view(request):
         return blocked_response
 
     active_link = 'countries'
-    countries_with_posts = Country.objects.filter(post__isnull=False).distinct()
+    countries_with_posts = Country.objects.filter(post__isnull=False).distinct().order_by('name')
 
     if request.user.is_authenticated:
         profile = get_object_or_404(Profile, user=request.user)
@@ -44,9 +45,8 @@ def country_list_view(request):
 @login_required
 def toggle_country_interest(request, country_id):
     """
-    подписка на страну
+    Подписка на страну
     """
-
     profile = Profile.objects.get(user=request.user)
 
     blocked_response = check_user_blocked(profile)
@@ -54,14 +54,13 @@ def toggle_country_interest(request, country_id):
         return blocked_response
 
     country = get_object_or_404(Country, id=country_id)
-    profile = get_object_or_404(Profile, user=request.user)
 
     if country in profile.countries_interest.all():
         profile.countries_interest.remove(country)
     else:
         profile.countries_interest.add(country)
 
-    return redirect(request.META.get('HTTP_REFERER'))
+    return JsonResponse({'status': 'ok', 'message': 'Subscription toggled successfully.'}, status=200)
 
 
 @login_required

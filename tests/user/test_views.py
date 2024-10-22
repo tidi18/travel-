@@ -31,7 +31,7 @@ class RegistrationViewTestCase(TestCase):
             model.objects.all().delete()
 
     def test_registration_201(self):
-        """Тестирование процесса регистрации пользователя"""
+        """тестирование процесса регистрации пользователя"""
         data = {
             'username': 'testuser',
             'password': 'testpassword',
