@@ -3,6 +3,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator
 from django.db import models
 from country.models import Country
+from django.utils import timezone
+from multiselectfield import MultiSelectField
 
 
 def validate_image_size(image):
@@ -62,14 +64,12 @@ class Post(models.Model):
     photos = models.ManyToManyField(Photo, blank=True, verbose_name='Фотографии')
     tags = models.ManyToManyField(Tag, blank=True, verbose_name='Теги')
     rating = models.IntegerField(default=0, verbose_name='Рейтинг')
+    last_lifted_at = models.DateTimeField(null=True, blank=True, verbose_name='Последнее время поднятия')
 
     def save(self, *args, **kwargs):
-        self.clean()
-        super().save(*args, **kwargs)
-
         if self.photos.count() > 10:
-            self.delete()
             raise ValidationError("Можно прикрепить не более 10 фотографий.")
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.author} | {self.subject}'
@@ -105,8 +105,65 @@ class PostRatingAction(models.Model):
     action = models.CharField(max_length=10, choices=[('up', 'Upvote'), ('down', 'Downvote')])
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f'{self.post} {self.user} {self.action}'
+
     class Meta:
         verbose_name = 'Оценка'
         verbose_name_plural = 'Оценки'
         unique_together = ('user', 'post', 'action')
+
+
+DAYS_OF_WEEK = (
+    ('0', 'Понедельник'),
+    ('1', 'Вторник'),
+    ('2', 'Среда'),
+    ('3', 'Четверг'),
+    ('4', 'Пятница'),
+    ('5', 'Суббота'),
+    ('6', 'Воскресенье'),
+)
+
+
+class AutoPostLift(models.Model):
+    """
+    модель для автоподнятия постов
+    """
+
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='auto_lifts')
+    start_date = models.DateField(verbose_name='Дата начала автоподнятия')
+    end_date = models.DateField(verbose_name='Дата окончания автоподнятия')
+    days_of_week = MultiSelectField(
+        choices=DAYS_OF_WEEK,
+        verbose_name='Дни недели для автоподнятия',
+        max_length=13,
+        blank=True
+    )
+
+    def __str__(self):
+        return f'{self.post}'
+
+    class Meta:
+        verbose_name = 'Автоподнятие поста'
+        verbose_name_plural = 'Автоподнятие постов'
+
+
+class PostLiftLog(models.Model):
+    """
+    Модель для логирования автоподнятия постов.
+    """
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='lift_logs', verbose_name='Пост')
+    lifted_at = models.DateTimeField(default=timezone.now, verbose_name='Время поднятия')
+    message = models.CharField(max_length=255, verbose_name='Сообщение', blank=True, null=True)
+
+    def __str__(self):
+        return f'Лог поднятия: {self.post.subject} | {self.lifted_at}'
+
+    class Meta:
+        verbose_name = 'Лог автоподнятия поста'
+        verbose_name_plural = 'Логи автоподнятия постов'
+
+
+
+
 

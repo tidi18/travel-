@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.contrib.messages.views import SuccessMessageMixin
@@ -8,7 +9,8 @@ from django.urls import reverse_lazy
 from .forms import RegistrationForm, PostForm, CommentForm
 from .models import Profile, Photo, Post, Tag, PostRatingAction
 from .forms import UserLoginForm
-from django.db.models import Q
+from django.db.models import Q, Value
+from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from user.models import Country
 from django.core.paginator import Paginator
@@ -45,13 +47,12 @@ def logout_view(request):
 
 def index(request):
     """
-     предсталение для ленты если пользователь аутентифицирован будут показыны посты
-     по интересующим его странам и посты пользователей на которых он подписан
-     если нет то будут показаны первые 10 постов
+    Представление для ленты. Если пользователь аутентифицирован, показываются посты
+    по интересующим его странам и посты пользователей, на которых он подписан.
+    Если нет, то будут показаны первые 10 постов.
     """
 
     active_link = 'index'
-
     is_authenticated_user = request.user.is_authenticated
 
     if is_authenticated_user:
@@ -60,25 +61,36 @@ def index(request):
         except Profile.DoesNotExist:
             return redirect('login')
 
-    posts = Post.objects.filter(
-        Q(countries__in=profile.countries_interest.all()) |
-        Q(author__in=profile.followers.all())
-    ).distinct().order_by('-create_date')
+        posts = Post.objects.filter(
+            Q(countries__in=profile.countries_interest.all()) |
+            Q(author__in=profile.followers.all())
+        ).annotate(
+            last_lifted_at_value=Coalesce('last_lifted_at', Value(datetime.min))  # Заменяем None на минимальную дату
+        ).distinct().order_by('-last_lifted_at_value', '-create_date')  # Сортировка по last_lifted_at и затем по create_date
 
-    for post in posts:
-        post.is_following = post.author.profile.followers.filter(id=request.user.id).exists()
+        for post in posts:
+            post.is_following = post.author.profile.followers.filter(id=request.user.id).exists()
 
-    paginator = Paginator(posts, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+        paginator = Paginator(posts, 10)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
 
-    context = {
-        'posts': page_obj,
-        'active_link': active_link,
-        'is_authenticated_user': is_authenticated_user
-    }
+        context = {
+            'posts': page_obj,
+            'active_link': active_link,
+            'is_authenticated_user': is_authenticated_user
+        }
 
-    return render(request, "user/index.html", context)
+        return render(request, "user/index.html", context)
+    else:
+        # Если пользователь не аутентифицирован, можно отобразить первые 10 постов
+        posts = Post.objects.all().order_by('-create_date')[:10]
+        context = {
+            'posts': posts,
+            'active_link': active_link,
+            'is_authenticated_user': is_authenticated_user
+        }
+        return render(request, "user/index.html", context)
 
 
 @login_required
