@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.contrib.messages.views import SuccessMessageMixin
@@ -61,12 +62,19 @@ def index(request):
         except Profile.DoesNotExist:
             return redirect('login')
 
-        posts = Post.objects.filter(
-            Q(countries__in=profile.countries_interest.all()) |
-            Q(author__in=profile.followers.all())
-        ).annotate(
-            last_lifted_at_value=Coalesce('last_lifted_at', Value(datetime.min))  # Заменяем None на минимальную дату
-        ).distinct().order_by('-last_lifted_at_value', '-create_date')  # Сортировка по last_lifted_at и затем по create_date
+
+        cache_key = f"user_feed_{request.user.id}"
+        posts = cache.get(cache_key)
+
+        if not posts:
+            posts = Post.objects.filter(
+                Q(countries__in=profile.countries_interest.all()) |
+                Q(author__in=profile.followers.all())
+            ).annotate(
+                last_lifted_at_value=Coalesce('last_lifted_at', Value(datetime.min))
+            ).distinct().order_by('-last_lifted_at_value', '-create_date')
+
+            cache.set(cache_key, posts, timeout=600)
 
         for post in posts:
             post.is_following = post.author.profile.followers.filter(id=request.user.id).exists()
@@ -83,8 +91,15 @@ def index(request):
 
         return render(request, "user/index.html", context)
     else:
-        # Если пользователь не аутентифицирован, можно отобразить первые 10 постов
-        posts = Post.objects.all().order_by('-create_date')[:10]
+
+        cache_key = 'public_feed'
+        posts = cache.get(cache_key)
+
+        if not posts:
+            posts = Post.objects.all().order_by('-create_date')[:10]
+
+            cache.set(cache_key, posts, timeout=300)
+
         context = {
             'posts': posts,
             'active_link': active_link,
@@ -243,21 +258,35 @@ def toggle_subscription(request, author_id):
 @login_required
 def post_detail_view(request, pk):
     """
-    подробная информация поста
+    Подробная информация поста
     """
 
-    profile = Profile.objects.get(user=request.user)
+    cache_key_profile = f"profile_{request.user.id}"
+    profile = cache.get(cache_key_profile)
+    if not profile:
+        profile = Profile.objects.get(user=request.user)
+        cache.set(cache_key_profile, profile, timeout=60*10)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
         return blocked_response
 
     form = CommentForm()
-    post = get_object_or_404(Post, id=pk)
+
+    cache_key_post = f"post_{pk}"
+    post = cache.get(cache_key_post)
+    if not post:
+        post = get_object_or_404(Post, id=pk)
+        cache.set(cache_key_post, post, timeout=60*10)
 
     is_following = False
     if request.user.is_authenticated:
-        author_profile = get_object_or_404(Profile, user=post.author)
+        cache_key_author_profile = f"profile_{post.author.id}"
+        author_profile = cache.get(cache_key_author_profile)
+        if not author_profile:
+            author_profile = get_object_or_404(Profile, user=post.author)
+            cache.set(cache_key_author_profile, author_profile, timeout=60*10)
+
         is_following = author_profile.followers.filter(id=request.user.id).exists()
 
     context = {
@@ -266,24 +295,33 @@ def post_detail_view(request, pk):
         'is_following': is_following,
         'active_link': 'post_detail',
     }
+
     return render(request, 'user/post_detail.html', context)
 
 
 @login_required
 def profiles_list_view(request):
-
     """
-    список пользователей
+    Список пользователей
     """
 
-    profile = Profile.objects.get(user=request.user)
+    cache_key_profile = f"profile_{request.user.id}"
+    profile = cache.get(cache_key_profile)
+    if not profile:
+        profile = Profile.objects.get(user=request.user)
+        cache.set(cache_key_profile, profile, timeout=60*10)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
         return blocked_response
 
     active_link = 'profiles'
-    profiles = Profile.objects.exclude(user__is_superuser=True).select_related('user')
+
+    cache_key_profiles = "profiles_list"
+    profiles = cache.get(cache_key_profiles)
+    if not profiles:
+        profiles = Profile.objects.exclude(user__is_superuser=True).select_related('user')
+        cache.set(cache_key_profiles, profiles, timeout=60*10)
 
     for profile in profiles:
         profile.unique_country_count = profile.user.posts.values('countries').distinct().count()
@@ -302,23 +340,47 @@ def profiles_list_view(request):
 
 @login_required
 def profile_detail_view(request, user_id):
-
     """
-    подробнее об пользователе
+    Подробная информация о пользователе
     """
 
-    profile = Profile.objects.get(user=request.user)
+    cache_key_profile = f"profile_{request.user.id}"
+    profile = cache.get(cache_key_profile)
+    if not profile:
+        profile = Profile.objects.get(user=request.user)
+        cache.set(cache_key_profile, profile, timeout=60*10)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
         return blocked_response
 
     active_link = 'profile_detail_view'
-    profile = get_object_or_404(Profile, user__id=user_id)
+
+    cache_key_user_profile = f"profile_detail_{user_id}"
+    profile = cache.get(cache_key_user_profile)
+    if not profile:
+        profile = get_object_or_404(Profile, user__id=user_id)
+        cache.set(cache_key_user_profile, profile, timeout=60*10)
+
     user = profile.user
-    posts = profile.user.posts.all().order_by('-create_date')
-    unique_country_count = profile.user.posts.values('countries').distinct().count()
-    interested_countries = profile.countries_interest.all()
+
+    cache_key_posts = f"user_posts_{user_id}"
+    posts = cache.get(cache_key_posts)
+    if not posts:
+        posts = profile.user.posts.all().order_by('-create_date')
+        cache.set(cache_key_posts, posts, timeout=60*10)
+
+    cache_key_unique_country_count = f"unique_country_count_{user_id}"
+    unique_country_count = cache.get(cache_key_unique_country_count)
+    if unique_country_count is None:
+        unique_country_count = profile.user.posts.values('countries').distinct().count()
+        cache.set(cache_key_unique_country_count, unique_country_count, timeout=60*10)
+
+    cache_key_interested_countries = f"interested_countries_{user_id}"
+    interested_countries = cache.get(cache_key_interested_countries)
+    if not interested_countries:
+        interested_countries = profile.countries_interest.all()
+        cache.set(cache_key_interested_countries, interested_countries, timeout=60*10)
 
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
@@ -338,20 +400,35 @@ def profile_detail_view(request, user_id):
 
 @login_required
 def profile_posts(request, user_id):
+    """
+    Посты определенного пользователя
+    """
 
-    """
-    посты определенного пользователя
-    """
-    profile = Profile.objects.get(user=request.user)
+    cache_key_profile = f"profile_{request.user.id}"
+    profile = cache.get(cache_key_profile)
+    if not profile:
+        profile = Profile.objects.get(user=request.user)
+        cache.set(cache_key_profile, profile, timeout=60 * 10)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
         return blocked_response
 
     active_link = 'profile_posts'
-    profile = get_object_or_404(Profile, user__id=user_id)
+
+    cache_key_user_profile = f"profile_detail_{user_id}"
+    profile = cache.get(cache_key_user_profile)
+    if not profile:
+        profile = get_object_or_404(Profile, user__id=user_id)
+        cache.set(cache_key_user_profile, profile, timeout=60 * 10)
+
     user = profile.user
-    posts = profile.user.posts.all().order_by('-create_date')
+
+    cache_key_posts = f"user_posts_{user_id}"
+    posts = cache.get(cache_key_posts)
+    if not posts:
+        posts = profile.user.posts.all().order_by('-create_date')
+        cache.set(cache_key_posts, posts, timeout=60 * 10)
 
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
@@ -369,20 +446,33 @@ def profile_posts(request, user_id):
 
 @login_required
 def posts_by_country_view(request, country_id):
-
     """
-    посты связанные со странной
+    Посты, связанные со страной
     """
 
-    profile = Profile.objects.get(user=request.user)
+    cache_key_profile = f"profile_{request.user.id}"
+    profile = cache.get(cache_key_profile)
+    if not profile:
+        profile = Profile.objects.get(user=request.user)
+        cache.set(cache_key_profile, profile, timeout=60 * 10)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
         return blocked_response
 
     active_link = 'posts_by_country_view'
-    country = get_object_or_404(Country, id=country_id)
-    posts = Post.objects.filter(countries=country).order_by('-create_date')
+
+    cache_key_country = f"country_{country_id}"
+    country = cache.get(cache_key_country)
+    if not country:
+        country = get_object_or_404(Country, id=country_id)
+        cache.set(cache_key_country, country, timeout=60 * 10)
+
+    cache_key_posts = f"posts_by_country_{country_id}"
+    posts = cache.get(cache_key_posts)
+    if not posts:
+        posts = Post.objects.filter(countries=country).order_by('-create_date')
+        cache.set(cache_key_posts, posts, timeout=60 * 10)
 
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
@@ -393,6 +483,7 @@ def posts_by_country_view(request, country_id):
         'country': country,
         'posts': page_obj,
     }
+
     return render(request, 'country/country_detail.html', context)
 
 
@@ -428,20 +519,33 @@ def add_comment(request, post_id):
 
 @login_required
 def post_comments_view(request, post_id):
-
     """
-    список комментариев определенного поста
+    Список комментариев определенного поста
     """
 
-    profile = Profile.objects.get(user=request.user)
+    cache_key_profile = f"profile_{request.user.id}"
+    profile = cache.get(cache_key_profile)
+    if not profile:
+        profile = Profile.objects.get(user=request.user)
+        cache.set(cache_key_profile, profile, timeout=60 * 10)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
         return blocked_response
 
     active_link = 'post_comments_view'
-    post = get_object_or_404(Post, id=post_id)
-    comments = post.comments.all().order_by('created_at')
+
+    cache_key_post = f"post_{post_id}"
+    post = cache.get(cache_key_post)
+    if not post:
+        post = get_object_or_404(Post, id=post_id)
+        cache.set(cache_key_post, post, timeout=60 * 10)
+
+    cache_key_comments = f"post_comments_{post_id}"
+    comments = cache.get(cache_key_comments)
+    if not comments:
+        comments = post.comments.all().order_by('created_at')
+        cache.set(cache_key_comments, comments, timeout=60 * 10)
 
     paginator = Paginator(comments, 20)
     page_number = request.GET.get('page')
@@ -458,19 +562,31 @@ def post_comments_view(request, post_id):
 
 @login_required
 def tag_view(request, id):
-
     """
-    получение тегов по id
+    Получение тегов по id
     """
 
-    profile = Profile.objects.get(user=request.user)
+    cache_key_profile = f"profile_{request.user.id}"
+    profile = cache.get(cache_key_profile)
+    if not profile:
+        profile = Profile.objects.get(user=request.user)
+        cache.set(cache_key_profile, profile, timeout=60*10)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
         return blocked_response
 
-    tag = get_object_or_404(Tag, id=id)
-    posts = Post.objects.filter(tags=tag).order_by('-create_date')
+    cache_key_tag = f"tag_{id}"
+    tag = cache.get(cache_key_tag)
+    if not tag:
+        tag = get_object_or_404(Tag, id=id)
+        cache.set(cache_key_tag, tag, timeout=60*30)
+
+    cache_key_posts = f"tag_posts_{id}"
+    posts = cache.get(cache_key_posts)
+    if not posts:
+        posts = Post.objects.filter(tags=tag).order_by('-create_date')
+        cache.set(cache_key_posts, posts, timeout=60*10)
 
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
@@ -485,19 +601,31 @@ def tag_view(request, id):
 
 @login_required
 def posts_by_tag_view(request, tag_id):
-
     """
-    список постов по тегу
+    Список постов по тегу
     """
 
-    profile = Profile.objects.get(user=request.user)
+    cache_key_profile = f"profile_{request.user.id}"
+    profile = cache.get(cache_key_profile)
+    if not profile:
+        profile = Profile.objects.get(user=request.user)
+        cache.set(cache_key_profile, profile, timeout=60 * 10)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
         return blocked_response
 
-    tag = get_object_or_404(Tag, id=tag_id)
-    posts = Post.objects.filter(tags=tag).order_by('-create_date')
+    cache_key_tag = f"tag_{tag_id}"
+    tag = cache.get(cache_key_tag)
+    if not tag:
+        tag = get_object_or_404(Tag, id=tag_id)
+        cache.set(cache_key_tag, tag, timeout=60 * 30)
+
+    cache_key_posts = f"tag_posts_{tag_id}"
+    posts = cache.get(cache_key_posts)
+    if not posts:
+        posts = Post.objects.filter(tags=tag).order_by('-create_date')
+        cache.set(cache_key_posts, posts, timeout=60 * 10)
 
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')

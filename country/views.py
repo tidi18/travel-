@@ -1,17 +1,17 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import JsonResponse
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 from user.models import Profile
 from .models import Country
 from user.permissions import check_user_blocked
+from django.core.cache import cache
 
 
 @login_required
 def country_list_view(request):
-
     """
-    список стран связынные с постами
+    Список стран, связанных с постами
     """
 
     profile = Profile.objects.get(user=request.user)
@@ -21,7 +21,12 @@ def country_list_view(request):
         return blocked_response
 
     active_link = 'countries'
-    countries_with_posts = Country.objects.filter(post__isnull=False).distinct().order_by('name')
+
+    cache_key_countries = "countries_with_posts"
+    countries_with_posts = cache.get(cache_key_countries)
+    if not countries_with_posts:
+        countries_with_posts = Country.objects.filter(post__isnull=False).distinct().order_by('name')
+        cache.set(cache_key_countries, countries_with_posts, timeout=60*10)
 
     if request.user.is_authenticated:
         profile = get_object_or_404(Profile, user=request.user)
@@ -65,9 +70,8 @@ def toggle_country_interest(request, country_id):
 
 @login_required
 def country_detail_view(request, country_id):
-
     """
-    подробная информация о стране
+    Подробная информация о стране
     """
 
     profile = Profile.objects.get(user=request.user)
@@ -77,7 +81,13 @@ def country_detail_view(request, country_id):
         return blocked_response
 
     active_link = 'country_detail_view'
-    country = get_object_or_404(Country, id=country_id)
+
+    cache_key_country = f"country_detail_{country_id}"
+    country = cache.get(cache_key_country)
+
+    if not country:
+        country = get_object_or_404(Country, id=country_id)
+        cache.set(cache_key_country, country, timeout=60 * 10)
 
     if request.user.is_authenticated:
         profile = get_object_or_404(Profile, user=request.user)
