@@ -140,7 +140,7 @@ class CommentForm(forms.ModelForm):
         label='Тело поста',
         widget=forms.Textarea(attrs={'rows': 1, 'cols': 20}),
         required=True,
-        validators=[MinLengthValidator(3)]  # Убедитесь, что это импортировано
+        validators=[MinLengthValidator(3)]
     )
 
     class Meta:

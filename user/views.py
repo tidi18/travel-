@@ -216,9 +216,8 @@ def downgrade_rating(request, post_id):
 
 @login_required
 def toggle_subscription(request, author_id):
-
     """
-    подписка на пользователя
+    Подписка на пользователя
     """
 
     profile = Profile.objects.get(user=request.user)
@@ -238,7 +237,7 @@ def toggle_subscription(request, author_id):
     author_profile.followers_count = author_profile.followers.count()
     author_profile.save()
 
-    return redirect(request.META.get('HTTP_REFERER'))
+    return JsonResponse({'status': 'ok', 'message': 'Subscription toggled successfully.'}, status=200)
 
 
 @login_required
@@ -317,7 +316,7 @@ def profile_detail_view(request, user_id):
     active_link = 'profile_detail_view'
     profile = get_object_or_404(Profile, user__id=user_id)
     user = profile.user
-    posts = profile.user.posts.all()
+    posts = profile.user.posts.all().order_by('-create_date')
     unique_country_count = profile.user.posts.values('countries').distinct().count()
     interested_countries = profile.countries_interest.all()
 
@@ -352,7 +351,7 @@ def profile_posts(request, user_id):
     active_link = 'profile_posts'
     profile = get_object_or_404(Profile, user__id=user_id)
     user = profile.user
-    posts = profile.user.posts.all()
+    posts = profile.user.posts.all().order_by('-create_date')
 
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
@@ -457,6 +456,7 @@ def post_comments_view(request, post_id):
     return render(request, 'user/post_detail.html', context)
 
 
+@login_required
 def tag_view(request, id):
 
     """
@@ -480,9 +480,10 @@ def tag_view(request, id):
         'posts': page_obj,
         'tag': tag,
     }
-    return render(request, 'user/tag_view.html', context)
+    return render(request, 'user/posts_by_tag.html', context)
 
 
+@login_required
 def posts_by_tag_view(request, tag_id):
 
     """

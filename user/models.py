@@ -58,7 +58,7 @@ class Tag(models.Model):
 class Post(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE,  verbose_name='Автор', blank=False, null=True, related_name='posts')
-    countries = models.ManyToManyField(Country, blank=False, null=True, verbose_name="Страны")
+    countries = models.ManyToManyField(Country, blank=False, verbose_name="Страны")
     subject = models.CharField(max_length=255, blank=False, null=True, verbose_name='Тема')
     body = models.TextField(validators=[MinLengthValidator(3)], blank=False, null=True, verbose_name='Тело поста')
     photos = models.ManyToManyField(Photo, blank=True, verbose_name='Фотографии')
@@ -67,9 +67,9 @@ class Post(models.Model):
     last_lifted_at = models.DateTimeField(null=True, blank=True, verbose_name='Последнее время поднятия')
 
     def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
         if self.photos.count() > 10:
             raise ValidationError("Можно прикрепить не более 10 фотографий.")
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.author} | {self.subject}'
