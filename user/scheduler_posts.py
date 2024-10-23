@@ -19,9 +19,18 @@ def get_posts_data():
     )
 
     for lift in lifts:
+        if lift.end_date == today:
+            post = lift.post
+            post.last_lifted_at = post.create_date
+            post.save()
+            PostLiftLog.objects.create(
+                post=post,
+                message=f'Пост "{post.subject}" поднят автоматически, last_lifted_at установлен на create_date.'
+            )
+            print(f'Подняли пост: {post.subject}, last_lifted_at установлен на {post.create_date}')
+
         if lift.days_of_week and is_today_in_selected_days(lift.days_of_week):
             lift_post(lift)
-
         elif not lift.days_of_week:
             lift_post(lift)
 
@@ -31,7 +40,7 @@ def get_posts_data():
 def lift_post(lift):
     post = lift.post
 
-    post.last_lifted_at = timezone.now()   # Устанавливаем текущее время
+    post.last_lifted_at = timezone.now()
     post.save()
 
     PostLiftLog.objects.create(

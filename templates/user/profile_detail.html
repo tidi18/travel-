@@ -52,7 +52,7 @@
                         Количество постов: {{ profile.post_count }}
                     </p>
                     <p>
-                        Количество подписчиков: {{ profile.followers_count }}
+                        Количество подписчиков: {{ profile.followers.count }}
                     </p>
                     <p>
                         Количество стран, на которые сделаны посты: {{ unique_country_count }}
@@ -100,7 +100,7 @@
                 {% if post.countries.exists %}
                     <p>Страны: 
                         {% for country in post.countries.all %}
-                            {{ country.name }}{% if not forloop.last %}, {% endif %}
+                        <a href="{% url 'country_detail' country.id %}">{{ country.name }}</a>{% if not forloop.last %}, {% endif %}
                         {% endfor %}
                     </p>
                 {% else %}

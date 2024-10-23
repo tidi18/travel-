@@ -68,8 +68,14 @@ class Post(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+
         if self.photos.count() > 10:
             raise ValidationError("Можно прикрепить не более 10 фотографий.")
+
+        if not self.last_lifted_at:
+            self.last_lifted_at = self.create_date
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.author} | {self.subject}'

@@ -82,7 +82,7 @@
                     </div>
                     <div id="img">
                         {% if post.photos.exists %}
-                            <img src="{{ post.photos.first.image.url }}" alt="photo">
+                        <img id="photo" src="{{ post.photos.first.image.url }}" alt="photo">
                         {% else %}
                                 <p>Фотографии не загружены</p>
                         {% endif %}
@@ -319,5 +319,36 @@
             });
         });
     });
+
+document.addEventListener('DOMContentLoaded', function () {
+    const subscriptionForm = document.querySelector('.subscription-form');
+    const subscriptionButton = document.getElementById('subscription-btn');
+
+    subscriptionForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const url = subscriptionForm.action;
+
+        fetch(url, {
+            method: 'POST',
+            body: new FormData(subscriptionForm),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest', // Указываем, что это AJAX запрос
+                'X-CSRFToken': subscriptionForm.querySelector('[name=csrfmiddlewaretoken]').value, // Добавляем CSRF токен
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.is_following) {
+                    subscriptionButton.textContent = 'Отписаться';
+                } else {
+                    subscriptionButton.textContent = 'Подписаться';
+                }
+            }
+        })
+        .catch(error => console.error('Ошибка:', error));
+    });
+});
 </script>
 {% endblock %}

@@ -62,7 +62,6 @@ def index(request):
         except Profile.DoesNotExist:
             return redirect('login')
 
-
         cache_key = f"user_feed_{request.user.id}"
         posts = cache.get(cache_key)
 
@@ -70,9 +69,7 @@ def index(request):
             posts = Post.objects.filter(
                 Q(countries__in=profile.countries_interest.all()) |
                 Q(author__in=profile.followers.all())
-            ).annotate(
-                last_lifted_at_value=Coalesce('last_lifted_at', Value(datetime.min))
-            ).distinct().order_by('-last_lifted_at_value', '-create_date')
+            ).order_by('-last_lifted_at')
 
             cache.set(cache_key, posts, timeout=600)
 
@@ -231,8 +228,9 @@ def downgrade_rating(request, post_id):
 
 @login_required
 def toggle_subscription(request, author_id):
+
     """
-    Подписка на пользователя
+    подписка на пользователя
     """
 
     profile = Profile.objects.get(user=request.user)
@@ -252,7 +250,7 @@ def toggle_subscription(request, author_id):
     author_profile.followers_count = author_profile.followers.count()
     author_profile.save()
 
-    return JsonResponse({'status': 'ok', 'message': 'Subscription toggled successfully.'}, status=200)
+    return redirect(request.META.get('HTTP_REFERER'))
 
 
 @login_required
@@ -626,7 +624,6 @@ def posts_by_tag_view(request, tag_id):
     if not posts:
         posts = Post.objects.filter(tags=tag).order_by('-create_date')
         cache.set(cache_key_posts, posts, timeout=60 * 10)
-
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
