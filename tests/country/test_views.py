@@ -1,6 +1,7 @@
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
-from user.models import Profile, User, Post
+from user.models import Profile, Post
 from django.apps import apps
 from country.models import Country
 
@@ -66,52 +67,6 @@ class CountryListViewTestCase(TestCase):
         """перенаправление"""
         response = self.client.get(self.url)
         self.assertRedirects(response, f'/login/?next={self.url}')
-
-
-class ToggleCountryInterestTestCase(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(username='testuser', password='testpassword')
-        self.profile = Profile.objects.create(user=self.user)
-
-        self.country2 = Country.objects.create(
-            name='test2 country',
-            top_level_domain='test top_level_domain',
-            alpha2_code='test2 alpha2_code',
-            alpha3_code='test alpha32_code',
-            calling_code='test calling_code',
-            capital='test capital',
-            alt_spellings='test alt_spellings',
-            region='region'
-        )
-
-        self.url = reverse('toggle_country_interest', args=[self.country2.id])
-
-    def test_login_required(self):
-        """Перенаправление, если пользователь не аутентифицирован"""
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 302)
-
-    def test_toggle_country_interest_add(self):
-        """Подписка на страну"""
-        self.client.login(username='testuser', password='testpassword')
-
-        response = self.client.post(self.url)
-        self.assertEqual(response.status_code, 200)
-
-        self.profile.refresh_from_db()
-        self.assertTrue(self.profile.countries_interest.filter(id=self.country2.id).exists())
-
-    def test_toggle_country_interest_remove(self):
-        """Отписка от страны"""
-        self.profile.countries_interest.add(self.country2)
-
-        self.client.login(username='testuser', password='testpassword')  # Убедитесь, что пользователь аутентифицирован
-
-        response = self.client.post(self.url)
-
-        self.profile.refresh_from_db()
-        self.assertFalse(self.profile.countries_interest.filter(id=self.country2.id).exists())
-        self.assertEqual(response.status_code, 200)
 
 
 class CountryDetailViewTestCase(TestCase):

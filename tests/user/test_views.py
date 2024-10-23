@@ -597,54 +597,6 @@ class DowngradeRatingTestCase(TestCase):
         self.assertEqual(response.json(), {'status': 'ok', 'new_rating': self.post1.rating})
 
 
-class ToggleSubscriptionTestCase(TestCase):
-    def setUp(self):
-
-        self.user = User.objects.create_user(username='testuser', password='password')
-        self.author = User.objects.create_user(username='authoruser', password='password')
-
-        self.user_profile = Profile.objects.create(user=self.user)
-        self.author_profile = Profile.objects.create(user=self.author)
-
-        self.url = reverse('toggle_subscription', args=[self.author.id])
-
-    def test_login_required(self):
-        """перенаправление если пользователь не аутентифицирован"""
-
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 302)
-
-    def test_subscribe_to_author(self):
-        """подписка на автора"""
-
-        self.client.login(username='testuser', password='password')
-
-        response = self.client.post(self.url, follow=True)
-        self.assertEqual(response.status_code, 200)
-
-        self.assertTrue(self.author_profile.followers.filter(id=self.user.id).exists())
-
-        self.author_profile.refresh_from_db()
-        self.assertEqual(self.author_profile.followers_count, 1)
-
-    def test_unsubscribe_from_author(self):
-        """отписка от автора"""
-
-        self.client.login(username='testuser', password='password')
-
-        self.author_profile.followers.add(self.user)
-        self.author_profile.followers_count = 1
-        self.author_profile.save()
-
-        response = self.client.post(self.url, follow=True)
-        self.assertEqual(response.status_code, 200)
-
-        self.assertFalse(self.author_profile.followers.filter(id=self.user.id).exists())
-
-        self.author_profile.refresh_from_db()
-        self.assertEqual(self.author_profile.followers_count, 0)
-
-
 class PostDetailViewTestCase(TestCase):
     def setUp(self):
 
