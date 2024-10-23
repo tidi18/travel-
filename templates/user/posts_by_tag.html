@@ -61,26 +61,28 @@
             <p>Страны не указаны</p>
         {% endif %}
     </div>
-    <div id="img">
-        {% if post.photos.exists %}
-            <img src="{{ post.photos.first.image.url }}" alt="photo">
-        {% else %}
-            <p>Фотографии не загружены</p>
-        {% endif %}
-        {% if post.photos.count > 1 %}
-            <div class="button-container">
-                <a href="{{ post.photos.last.image.url }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="#fff" class="bi bi-arrow-left-short" viewBox="0 0 16 16">
-                        <path fill-rule="#fff" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
-                    </svg>
-                </a>
-                <a href="{{ post.photos.last.image.url }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="50  " height="50" fill="#fff" class="bi bi-arrow-right-short" viewBox="0 0 16 16">
-                        <path fill-rule="#fff" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"/>
-                    </svg>
-                </a>
-            </div>
-        {% endif %}
+    <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            {% if post.photos.exists %}
+                {% for photo in post.photos.all %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{{ photo.image.url }}" class="d-block w-100" alt="photo">
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="carousel-item active">
+                    <img src="" class="d-block w-100" alt="Нет фотографий">
+                </div>
+            {% endif %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Предыдущий</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Следующий</span>
+        </button>
     </div>   
     <br>   
     <div id="subject">

@@ -16,7 +16,7 @@ services:
     networks:
       - backend
 
-  country-scheduler:
+  posts-scheduler:
     build:
       context: .
       dockerfile: Dockerfile
