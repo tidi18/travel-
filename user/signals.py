@@ -1,8 +1,17 @@
 from django.contrib.auth.models import User
-from django.db.models.signals import m2m_changed, post_save
+from django.db.models.signals import m2m_changed, post_save, pre_save
 from django.dispatch import receiver
 from django.core.cache import cache
 from .models import Profile, Post, Comment
+
+
+@receiver(pre_save, sender=Post)
+def clear_cache_on_rating_change(sender, instance, **kwargs):
+    if instance.pk:
+        old_post = Post.objects.filter(pk=instance.pk).first()
+        if old_post and old_post.rating != instance.rating:
+            cache_key = f"user_feed_{old_post.author.id}"
+            cache.delete(cache_key)
 
 
 @receiver(post_save, sender=Post)

@@ -61,7 +61,7 @@
             <p>Страны не указаны</p>
         {% endif %}
     </div>
-    <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
+    <div id="post_{{ post.id }}" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
             {% if post.photos.exists %}
                 {% for photo in post.photos.all %}
@@ -75,11 +75,11 @@
                 </div>
             {% endif %}
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+        <button class="carousel-control-prev" type="button" data-bs-target="#post_{{ post.id }}" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Предыдущий</span>
         </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+        <button class="carousel-control-next" type="button" data-bs-target="#post_{{ post.id }}" data-bs-slide="next">
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Следующий</span>
         </button>
@@ -108,11 +108,13 @@
         </div>
         <div id="rating-{{ post.id }}">
             <p>Рейтинг: <span class="rating-value">{{ post.rating }}</span></p>
-            {% if post.author != request.user %}
-                <div class="rating-buttons">
-                    <a href="#" class="increase-rating" data-post-id="{{ post.id }}">нравится</a>
-                    <a href="#" class="decrease-rating" data-post-id="{{ post.id }}">не нравится</a>
-                </div>
+            {% if request.user.is_authenticated %}
+                {% if post.author != request.user %}
+                    <div class="rating-buttons">
+                        <a href="#" class="increase-rating" data-post-id="{{ post.id }}">нравится</a>
+                        <a href="#" class="decrease-rating" data-post-id="{{ post.id }}">не нравится</a>
+                    </div>    
+                {% endif %}
             {% endif %}
         </div>
         <br>

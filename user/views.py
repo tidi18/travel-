@@ -1,4 +1,3 @@
-from datetime import datetime
 from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
@@ -10,8 +9,7 @@ from django.urls import reverse_lazy
 from .forms import RegistrationForm, PostForm, CommentForm
 from .models import Profile, Photo, Post, Tag, PostRatingAction
 from .forms import UserLoginForm
-from django.db.models import Q, Value
-from django.db.models.functions import Coalesce
+from django.db.models import Q
 from django.http import JsonResponse
 from user.models import Country
 from django.core.paginator import Paginator
@@ -71,7 +69,7 @@ def index(request):
                 Q(author__in=profile.followers.all())
             ).order_by('-last_lifted_at')
 
-            cache.set(cache_key, posts, timeout=600)
+            cache.set(cache_key, posts, timeout=60*5)
 
         for post in posts:
             post.is_following = post.author.profile.followers.filter(id=request.user.id).exists()
@@ -95,7 +93,7 @@ def index(request):
         if not posts:
             posts = Post.objects.all().order_by('-create_date')[:10]
 
-            cache.set(cache_key, posts, timeout=300)
+            cache.set(cache_key, posts, timeout=60*5)
 
         context = {
             'posts': posts,
@@ -186,6 +184,24 @@ def increase_rating(request, post_id):
         rating_action.action = 'up'
         rating_action.save()
 
+        cache_keys = [
+            f"user_feed_{request.user.id}",
+            f"profile_{request.user.id}",
+            f"profile_{post.author.id}"
+            f"post_{post_id}",
+            f"user_posts_{request.user.id}"
+        ]
+
+        for country in post.countries.all():
+            cache_keys.append(f"posts_by_country_{country.id}")
+
+        for tag in post.tags.all():
+            cache_keys.append(f"tag_posts_{tag.id}")
+
+        for cache_key in cache_keys:
+            cache.delete(cache_key)
+            print(f"Cache cleared for key: {cache_key}")
+
         return JsonResponse({'status': 'ok', 'new_rating': post.rating})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=400)
@@ -220,6 +236,24 @@ def downgrade_rating(request, post_id):
 
             rating_action.action = 'down'
             rating_action.save()
+
+            cache_keys = [
+                f"user_feed_{request.user.id}",
+                f"profile_{request.user.id}",
+                f"profile_{post.author.id}",
+                f"user_posts_{request.user.id}"
+                f"post_{post_id}",
+            ]
+
+            for country in post.countries.all():
+                cache_keys.append(f"posts_by_country_{country.id}")
+
+            for tag in post.tags.all():
+                cache_keys.append(f"tag_posts_{tag.id}")
+
+            for cache_key in cache_keys:
+                cache.delete(cache_key)
+                print(f"Cache cleared for key: {cache_key}")
 
         return JsonResponse({'status': 'ok', 'new_rating': post.rating})
 
@@ -263,7 +297,7 @@ def post_detail_view(request, pk):
     profile = cache.get(cache_key_profile)
     if not profile:
         profile = Profile.objects.get(user=request.user)
-        cache.set(cache_key_profile, profile, timeout=60*10)
+        cache.set(cache_key_profile, profile, timeout=60*5)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
@@ -275,7 +309,7 @@ def post_detail_view(request, pk):
     post = cache.get(cache_key_post)
     if not post:
         post = get_object_or_404(Post, id=pk)
-        cache.set(cache_key_post, post, timeout=60*10)
+        cache.set(cache_key_post, post, timeout=60*5)
 
     is_following = False
     if request.user.is_authenticated:
@@ -283,7 +317,7 @@ def post_detail_view(request, pk):
         author_profile = cache.get(cache_key_author_profile)
         if not author_profile:
             author_profile = get_object_or_404(Profile, user=post.author)
-            cache.set(cache_key_author_profile, author_profile, timeout=60*10)
+            cache.set(cache_key_author_profile, author_profile, timeout=60*5)
 
         is_following = author_profile.followers.filter(id=request.user.id).exists()
 
@@ -307,7 +341,7 @@ def profiles_list_view(request):
     profile = cache.get(cache_key_profile)
     if not profile:
         profile = Profile.objects.get(user=request.user)
-        cache.set(cache_key_profile, profile, timeout=60*10)
+        cache.set(cache_key_profile, profile, timeout=60*5)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
@@ -319,7 +353,7 @@ def profiles_list_view(request):
     profiles = cache.get(cache_key_profiles)
     if not profiles:
         profiles = Profile.objects.exclude(user__is_superuser=True).select_related('user')
-        cache.set(cache_key_profiles, profiles, timeout=60*10)
+        cache.set(cache_key_profiles, profiles, timeout=60*5)
 
     for profile in profiles:
         profile.unique_country_count = profile.user.posts.values('countries').distinct().count()
@@ -346,7 +380,7 @@ def profile_detail_view(request, user_id):
     profile = cache.get(cache_key_profile)
     if not profile:
         profile = Profile.objects.get(user=request.user)
-        cache.set(cache_key_profile, profile, timeout=60*10)
+        cache.set(cache_key_profile, profile, timeout=60*5)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
@@ -358,7 +392,7 @@ def profile_detail_view(request, user_id):
     profile = cache.get(cache_key_user_profile)
     if not profile:
         profile = get_object_or_404(Profile, user__id=user_id)
-        cache.set(cache_key_user_profile, profile, timeout=60*10)
+        cache.set(cache_key_user_profile, profile, timeout=60*5)
 
     user = profile.user
 
@@ -372,13 +406,13 @@ def profile_detail_view(request, user_id):
     unique_country_count = cache.get(cache_key_unique_country_count)
     if unique_country_count is None:
         unique_country_count = profile.user.posts.values('countries').distinct().count()
-        cache.set(cache_key_unique_country_count, unique_country_count, timeout=60*10)
+        cache.set(cache_key_unique_country_count, unique_country_count, timeout=60*5)
 
     cache_key_interested_countries = f"interested_countries_{user_id}"
     interested_countries = cache.get(cache_key_interested_countries)
     if not interested_countries:
         interested_countries = profile.countries_interest.all()
-        cache.set(cache_key_interested_countries, interested_countries, timeout=60*10)
+        cache.set(cache_key_interested_countries, interested_countries, timeout=60*5)
 
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
@@ -406,7 +440,7 @@ def profile_posts(request, user_id):
     profile = cache.get(cache_key_profile)
     if not profile:
         profile = Profile.objects.get(user=request.user)
-        cache.set(cache_key_profile, profile, timeout=60 * 10)
+        cache.set(cache_key_profile, profile, timeout=60*5)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
@@ -418,7 +452,7 @@ def profile_posts(request, user_id):
     profile = cache.get(cache_key_user_profile)
     if not profile:
         profile = get_object_or_404(Profile, user__id=user_id)
-        cache.set(cache_key_user_profile, profile, timeout=60 * 10)
+        cache.set(cache_key_user_profile, profile, timeout=60*5)
 
     user = profile.user
 
@@ -426,7 +460,7 @@ def profile_posts(request, user_id):
     posts = cache.get(cache_key_posts)
     if not posts:
         posts = profile.user.posts.all().order_by('-create_date')
-        cache.set(cache_key_posts, posts, timeout=60 * 10)
+        cache.set(cache_key_posts, posts, timeout=60*5)
 
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
@@ -452,7 +486,7 @@ def posts_by_country_view(request, country_id):
     profile = cache.get(cache_key_profile)
     if not profile:
         profile = Profile.objects.get(user=request.user)
-        cache.set(cache_key_profile, profile, timeout=60 * 10)
+        cache.set(cache_key_profile, profile, timeout=60*5)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
@@ -464,13 +498,13 @@ def posts_by_country_view(request, country_id):
     country = cache.get(cache_key_country)
     if not country:
         country = get_object_or_404(Country, id=country_id)
-        cache.set(cache_key_country, country, timeout=60 * 10)
+        cache.set(cache_key_country, country, timeout=60*5)
 
     cache_key_posts = f"posts_by_country_{country_id}"
     posts = cache.get(cache_key_posts)
     if not posts:
         posts = Post.objects.filter(countries=country).order_by('-create_date')
-        cache.set(cache_key_posts, posts, timeout=60 * 10)
+        cache.set(cache_key_posts, posts, timeout=60*5)
 
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
@@ -525,7 +559,7 @@ def post_comments_view(request, post_id):
     profile = cache.get(cache_key_profile)
     if not profile:
         profile = Profile.objects.get(user=request.user)
-        cache.set(cache_key_profile, profile, timeout=60 * 10)
+        cache.set(cache_key_profile, profile, timeout=60*5)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
@@ -537,13 +571,13 @@ def post_comments_view(request, post_id):
     post = cache.get(cache_key_post)
     if not post:
         post = get_object_or_404(Post, id=post_id)
-        cache.set(cache_key_post, post, timeout=60 * 10)
+        cache.set(cache_key_post, post, timeout=60*5)
 
     cache_key_comments = f"post_comments_{post_id}"
     comments = cache.get(cache_key_comments)
     if not comments:
         comments = post.comments.all().order_by('created_at')
-        cache.set(cache_key_comments, comments, timeout=60 * 10)
+        cache.set(cache_key_comments, comments, timeout=60*5)
 
     paginator = Paginator(comments, 20)
     page_number = request.GET.get('page')
@@ -578,13 +612,13 @@ def tag_view(request, id):
     tag = cache.get(cache_key_tag)
     if not tag:
         tag = get_object_or_404(Tag, id=id)
-        cache.set(cache_key_tag, tag, timeout=60*30)
+        cache.set(cache_key_tag, tag, timeout=60*5)
 
     cache_key_posts = f"tag_posts_{id}"
     posts = cache.get(cache_key_posts)
     if not posts:
         posts = Post.objects.filter(tags=tag).order_by('-create_date')
-        cache.set(cache_key_posts, posts, timeout=60*10)
+        cache.set(cache_key_posts, posts, timeout=60*5)
 
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
@@ -607,7 +641,7 @@ def posts_by_tag_view(request, tag_id):
     profile = cache.get(cache_key_profile)
     if not profile:
         profile = Profile.objects.get(user=request.user)
-        cache.set(cache_key_profile, profile, timeout=60 * 10)
+        cache.set(cache_key_profile, profile, timeout=60*5)
 
     blocked_response = check_user_blocked(profile)
     if blocked_response:
@@ -617,13 +651,13 @@ def posts_by_tag_view(request, tag_id):
     tag = cache.get(cache_key_tag)
     if not tag:
         tag = get_object_or_404(Tag, id=tag_id)
-        cache.set(cache_key_tag, tag, timeout=60 * 30)
+        cache.set(cache_key_tag, tag, timeout=60*5)
 
     cache_key_posts = f"tag_posts_{tag_id}"
     posts = cache.get(cache_key_posts)
     if not posts:
         posts = Post.objects.filter(tags=tag).order_by('-create_date')
-        cache.set(cache_key_posts, posts, timeout=60 * 10)
+        cache.set(cache_key_posts, posts, timeout=60*5)
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)

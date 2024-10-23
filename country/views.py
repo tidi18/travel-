@@ -88,7 +88,7 @@ def country_detail_view(request, country_id):
 
     if not country:
         country = get_object_or_404(Country, id=country_id)
-        cache.set(cache_key_country, country, timeout=60 * 10)
+        cache.set(cache_key_country, country, timeout=60*5)
 
     if request.user.is_authenticated:
         profile = get_object_or_404(Profile, user=request.user)
