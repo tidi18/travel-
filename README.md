@@ -17,9 +17,10 @@
 git clone https://github.com/tidi18/travel-.git
 
 Перейдите в корневую директорию:
-cd travel-
+- cd travel-
 
-Конфигурация окружения
+## Конфигурация окружения
+
 В корневой директории создайте файл .env с такими значениями:
 
 - SECRET_KEY='django-insecure-ya0cw6c-rrz2a$56caeagx+d2u!)s(e(k@y(gh49w*8cgz!i8f'-=
