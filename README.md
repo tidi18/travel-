@@ -22,24 +22,25 @@ cd travel-
 Конфигурация окружения
 В корневой директории создайте файл .env с такими значениями:
 
-SECRET_KEY='django-insecure-ya0cw6c-rrz2a$56caeagx+d2u!)s(e(k@y(gh49w*8cgz!i8f'
-DEBUG=True
-APIKEY='00dabc46361f5ae4c044d7840d8c6bf3'
-REDIS_URL=redis://redis:6379/0
+- SECRET_KEY='django-insecure-ya0cw6c-rrz2a$56caeagx+d2u!)s(e(k@y(gh49w*8cgz!i8f'-=
+- DEBUG=True
+- APIKEY='00dabc46361f5ae4c044d7840d8c6bf3'
+- REDIS_URL=redis://redis:6379/0
 
 Запуск приложения
 Соберите и запустите контейнеры:
 
-docker-compose build
-docker-compose up -d
+- docker-compose build
+- docker-compose up -d
 
 После запуска контейнеров вы можете получить доступ к приложению по адресу http://127.0.0.1:8000/.
 
 Административная панель
 Вы можете получить доступ к админ-панели по адресу http://127.0.0.1:8000/admin/ с использованием следующих учетных данных:
 
-Имя пользователя: root
-Пароль: 12qwaszx12qwaszx
+- Имя пользователя: root
+- Пароль: 12qwaszx12qwaszx
+
 Примечание: Данные стран обновляются через админ-панель с помощью кнопки "Обновить базу" в модели стран.
 
 
